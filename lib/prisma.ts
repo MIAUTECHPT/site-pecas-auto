@@ -15,3 +15,4 @@ function getPrismaClient() {
 
 export const prisma = getPrismaClient();
 export const getPrisma = getPrismaClient;
+export default prisma;
