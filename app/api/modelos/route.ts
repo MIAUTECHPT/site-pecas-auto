@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const brandId = searchParams.get("brandId");
 
-    const modelos = await prisma.model.findMany({
+    const modelos = await prisma.carModel.findMany({
       where: brandId ? { brandId: Number(brandId) } : undefined,
       orderBy: {
         name: "asc",
