@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  parts     Part[]
+}
+
+model Brand {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  slug      String     @unique
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  models    CarModel[]
+  parts     Part[]
+  salvages  Salvage[]
+  vehicles  Vehicle[]
+}
+
+model CarModel {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String
+  brandId   Int
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  brand     Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  parts     Part[]
+  salvages  Salvage[]
+  vehicles  Vehicle[]
+
+  @@unique([brandId, slug])
+}
+
+model Vehicle {
+  id          Int       @id @default(autoincrement())
+  reference   String    @unique
+  brandId     Int
+  modelId     Int
+  version     String?
+  year        Int?
+  kilometers  Int?
+  fuel        String?
+  gearbox     String?
+  color       String?
+  description String?
+  status      String    @default("available")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  parts       Part[]
+  salvages    Salvage[]
+  model       CarModel  @relation(fields: [modelId], references: [id])
+  brand       Brand     @relation(fields: [brandId], references: [id])
+}
+
+model Part {
+  id          Int         @id @default(autoincrement())
+  reference   String      @unique
+  name        String
+  description String?
+  price       Float?
+  stock       Int         @default(1)
+  condition   String?
+  status      String      @default("available")
+  categoryId  Int?
+  brandId     Int
+  modelId     Int
+  vehicleId   Int?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  vehicle     Vehicle?    @relation(fields: [vehicleId], references: [id])
+  model       CarModel    @relation(fields: [modelId], references: [id])
+  brand       Brand       @relation(fields: [brandId], references: [id])
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  images      PartImage[]
+  inquiries Inquiry[]
+}
+
+model PartImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  partId    Int
+  createdAt DateTime @default(now())
+  part      Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+}
+
+model Salvage {
+  id          Int            @id @default(autoincrement())
+  reference   String         @unique
+  title       String
+  description String?
+  price       Float?
+  status      String         @default("available")
+  brandId     Int
+  modelId     Int
+  vehicleId   Int?
+  year        Int?
+  kilometers  Int?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  vehicle     Vehicle?       @relation(fields: [vehicleId], references: [id])
+  model       CarModel       @relation(fields: [modelId], references: [id])
+  brand       Brand          @relation(fields: [brandId], references: [id])
+  images      SalvageImage[]
+}
+
+model SalvageImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  salvageId Int
+  createdAt DateTime @default(now())
+  salvage   Salvage  @relation(fields: [salvageId], references: [id], onDelete: Cascade)
+}
+model Inquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  partId    Int
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  part      Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+}
