@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
-// Listar modelos (GET)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -22,7 +21,6 @@ export async function GET(request: Request) {
   }
 }
 
-// Criar modelo (POST)
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -32,9 +30,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Nome e marca são obrigatórios." }, { status: 400 });
     }
 
+    // Criar um slug simples baseado no nome (ex: "Série 3" -> "serie-3")
+    const slug = name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
     const novoModelo = await prisma.carModel.create({
       data: {
         name,
+        slug: slug + "-" + Date.now(), // Garante unicidade
         brandId: Number(brandId),
       },
       include: { brand: true },
@@ -47,7 +54,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Eliminar modelo (DELETE) na mesma rota /api/modelos
 export async function DELETE(request: Request) {
   try {
     const body = await request.json();
