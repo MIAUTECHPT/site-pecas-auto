@@ -4,10 +4,32 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
 
+// GET: Listar todas as peças (com as respetivas imagens e dados relacionados)
+export async function GET() {
+  try {
+    const pecas = await prisma.part.findMany({
+      include: {
+        images: true,
+        brand: true,
+        model: true,
+        category: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(pecas, { status: 200 });
+  } catch (error: any) {
+    console.error("Erro ao listar peças:", error);
+    return NextResponse.json({ message: error.message || "Erro interno." }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-
+    
     const name = formData.get("name")?.toString();
     const reference = formData.get("reference")?.toString();
     const brandId = formData.get("brandId")?.toString();
@@ -17,7 +39,7 @@ export async function POST(request: Request) {
     const stock = formData.get("stock")?.toString();
     const condition = formData.get("condition")?.toString();
     const description = formData.get("description")?.toString();
-
+    
     const imageFile = formData.get("image") as File | null;
 
     if (!reference || !name || !brandId || !modelId || !price) {
@@ -43,7 +65,7 @@ export async function POST(request: Request) {
     if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
+      
       const fileName = `${Date.now()}-${imageFile.name.replace(/\s/g, '_')}`;
 
       const { error } = await supabase.storage
