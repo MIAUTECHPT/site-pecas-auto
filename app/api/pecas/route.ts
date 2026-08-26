@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const pecas = await prisma.part.findMany({
-      include: { brand: true, carModel: true, category: true },
+      include: { brand: true, model: true, category: true }, // Corrigido para 'model'
       orderBy: { id: "desc" },
     });
     return NextResponse.json(pecas);
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         reference,
         name,
         brandId: Number(brandId),
-        carModelId: Number(modelId),
+        modelId: Number(modelId), // Corrigido para 'modelId'
         categoryId: Number(categoryId),
         condition: condition || "Bom",
         price: Number(price),
