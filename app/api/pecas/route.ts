@@ -25,7 +25,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Preencha todos os campos obrigatórios." }, { status: 400 });
     }
 
-    // Criar um slug único baseado na referência e nome
     const slug = (reference + "-" + name)
       .toLowerCase()
       .normalize("NFD")
