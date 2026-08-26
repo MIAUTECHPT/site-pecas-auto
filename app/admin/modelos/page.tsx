@@ -75,6 +75,18 @@ export default function AdminModelosPage() {
     }
   }
 
+  async function handleDelete(id: number) {
+    if (!confirm("Tem a certeza de que pretende eliminar este modelo?")) return;
+
+    try {
+      const response = await fetch(`/api/modelos/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Erro ao eliminar o modelo.");
+      await carregarDados();
+    } catch (error) {
+      alert("Não foi possível eliminar o modelo.");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-100 p-8 text-zinc-900">
       <div className="mx-auto max-w-4xl">
@@ -113,6 +125,7 @@ export default function AdminModelosPage() {
               <input
                 type="text"
                 value={nomeModelo}
+                onChange={(e) => NomeModeloChange => setNomeModelo(e.target.value)}
                 onChange={(e) => setNomeModelo(e.target.value)}
                 placeholder="Nome do modelo (ex: Série 3, A4...)"
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
@@ -151,6 +164,12 @@ export default function AdminModelosPage() {
                       {m.brand?.name || "Marca desconhecida"}
                     </span>
                   </div>
+                  <button 
+                    onClick={() => handleDelete(m.id)}
+                    className="font-bold text-sm text-red-600 hover:text-red-800 transition"
+                  >
+                    Eliminar
+                  </button>
                 </div>
               ))
             )}
