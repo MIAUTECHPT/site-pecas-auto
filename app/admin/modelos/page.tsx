@@ -76,7 +76,7 @@ export default function AdminModelosPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Tem a certeza de que pretende eliminar este modelo?")) return;
+    if (!confirm("Tem a certeza absoluta de que pretende eliminar este modelo?")) return;
 
     try {
       const response = await fetch(`/api/modelos/${id}`, { method: "DELETE" });
@@ -125,7 +125,6 @@ export default function AdminModelosPage() {
               <input
                 type="text"
                 value={nomeModelo}
-                onChange={(e) => NomeModeloChange => setNomeModelo(e.target.value)}
                 onChange={(e) => setNomeModelo(e.target.value)}
                 placeholder="Nome do modelo (ex: Série 3, A4...)"
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
@@ -158,17 +157,17 @@ export default function AdminModelosPage() {
             ) : (
               models.map((m) => (
                 <div key={m.id} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50">
-                  <div>
+                  <div className="flex items-center gap-3">
                     <span className="font-bold text-zinc-900">{m.name}</span>
-                    <span className="ml-3 text-xs rounded-md bg-zinc-100 px-2 py-1 font-semibold text-zinc-700 border border-zinc-200">
+                    <span className="text-xs rounded-md bg-zinc-100 px-2 py-1 font-semibold text-zinc-700 border border-zinc-200">
                       {m.brand?.name || "Marca desconhecida"}
                     </span>
                   </div>
                   <button 
                     onClick={() => handleDelete(m.id)}
-                    className="font-bold text-sm text-red-600 hover:text-red-800 transition"
+                    className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 border border-red-200 transition hover:bg-red-600 hover:text-white"
                   >
-                    Eliminar
+                    Eliminar Modelo
                   </button>
                 </div>
               ))
