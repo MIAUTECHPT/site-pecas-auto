@@ -166,26 +166,35 @@ export default function Home() {
     carregarModelos();
   }, [brandId]);
 
-  async function pesquisarPecas(catIdOverride?: string) {
+  async function pesquisarPecas(
+    overrideSearch?: string,
+    overrideBrandId?: string,
+    overrideModelId?: string,
+    overrideCategoryId?: string
+  ) {
     setLoading(true);
     setSearched(true);
 
     try {
       const params = new URLSearchParams();
 
-      if (search.trim()) {
-        params.set("search", search.trim());
+      const termoBusca = overrideSearch !== undefined ? overrideSearch : search;
+      const marcaAtiva = overrideBrandId !== undefined ? overrideBrandId : brandId;
+      const modeloAtivo = overrideModelId !== undefined ? overrideModelId : modelId;
+      const catAtiva = overrideCategoryId !== undefined ? overrideCategoryId : categoryId;
+
+      if (termoBusca.trim()) {
+        params.set("search", termoBusca.trim());
       }
 
-      if (brandId) {
-        params.set("brandId", brandId);
+      if (marcaAtiva) {
+        params.set("brandId", marcaAtiva);
       }
 
-      if (modelId) {
-        params.set("modelId", modelId);
+      if (modeloAtivo) {
+        params.set("modelId", modeloAtivo);
       }
 
-      const catAtiva = catIdOverride !== undefined ? catIdOverride : categoryId;
       if (catAtiva) {
         params.set("categoryId", catAtiva);
       }
@@ -202,6 +211,39 @@ export default function Home() {
     } catch (error) {
       console.error("Erro ao pesquisar peças:", error);
       setPecas([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSelecionarCategoria(catId: number) {
+    const stringId = String(catId);
+    setCategoryId(stringId);
+    pesquisarPecas(undefined, undefined, undefined, stringId);
+
+    const elemento = document.getElementById("resultados-pecas");
+    if (elemento) {
+      elemento.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  async function limparPesquisa() {
+    setSearch("");
+    setBrandId("");
+    setModelId("");
+    setCategoryId("");
+    setModelos([]);
+    setSearched(false);
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/pecas");
+      if (response.ok) {
+        const data = await response.json();
+        setPecas(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Erro ao limpar pesquisa:", error);
     } finally {
       setLoading(false);
     }
