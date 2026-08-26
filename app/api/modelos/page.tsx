@@ -51,7 +51,7 @@ export default function AdminModelosPage() {
     setErro("");
 
     try {
-      const res = await fetch("/api/modelos", {
+      const res = await fetch("/api/modelos/adicionar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -60,7 +60,6 @@ export default function AdminModelosPage() {
         }),
       });
 
-      // Lê a resposta como texto primeiro para capturar erros detalhados do servidor
       const textResponse = await res.text();
       let data;
       try {
