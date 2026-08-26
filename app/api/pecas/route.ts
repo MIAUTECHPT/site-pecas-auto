@@ -1,52 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
-
-export async function GET() {
-  try {
-    const pecas = await prisma.part.findMany({
-      include: { brand: true, model: true, category: true },
-      orderBy: { id: "desc" },
-    });
-    return NextResponse.json(pecas);
-  } catch (error) {
-    console.error("Erro ao buscar peças:", error);
-    return NextResponse.json([], { status: 500 });
-  }
-}
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    
-    // Imprimir para ver exatamente o que chega no terminal do VS Code
-    console.log("--- DADOS RECEBIDOS NO FORM DATA ---");
-    formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
 
     const name = formData.get("name")?.toString();
     const reference = formData.get("reference")?.toString();
-    
-    // Aceita tanto brandId como brand
-    const brandId = formData.get("brandId")?.toString() || formData.get("brand")?.toString();
-    // Aceita tanto modelId como model
-    const modelId = formData.get("modelId")?.toString() || formData.get("model")?.toString();
-    // Aceita tanto categoryId como category
-    const categoryId = formData.get("categoryId")?.toString() || formData.get("category")?.toString();
-    
+    const brandId = formData.get("brandId")?.toString();
+    const modelId = formData.get("modelId")?.toString();
+    const categoryId = formData.get("categoryId")?.toString();
     const price = formData.get("price")?.toString();
     const stock = formData.get("stock")?.toString();
     const condition = formData.get("condition")?.toString();
     const description = formData.get("description")?.toString();
 
+    const imageFile = formData.get("image") as File | null;
+
     if (!reference || !name || !brandId || !modelId || !price) {
-      return NextResponse.json({ 
-        message: `Campos obrigatórios em falta. Recebido -> Ref: ${reference}, Nome: ${name}, Marca: ${brandId}, Modelo: ${modelId}, Preço: ${price}` 
-      }, { status: 400 });
+      return NextResponse.json({ message: "Preencha todos os campos obrigatórios." }, { status: 400 });
     }
 
+    // 1. Criar a peça na base de dados
     const novaPeca = await prisma.part.create({
       data: {
         reference,
@@ -61,9 +39,42 @@ export async function POST(request: Request) {
       },
     });
 
+    // 2. Se houver imagem, enviar para o Bucket 'images' do Supabase
+    if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const fileName = `${Date.now()}-${imageFile.name.replace(/\s/g, '_')}`;
+
+      const { error } = await supabase.storage
+        .from('images')
+        .upload(fileName, buffer, {
+          contentType: imageFile.type,
+          upsert: false
+        });
+
+      if (error) {
+        console.error("Erro no upload para o Supabase:", error);
+      } else {
+        // Obter o URL público da imagem
+        const { data: publicUrlData } = supabase.storage
+          .from('images')
+          .getPublicUrl(fileName);
+
+        // Guardar o link na tabela de imagens da peça
+        await prisma.partImage.create({
+          data: {
+            url: publicUrlData.publicUrl,
+            partId: novaPeca.id,
+            position: 0,
+          },
+        });
+      }
+    }
+
     return NextResponse.json(novaPeca, { status: 201 });
   } catch (error: any) {
-    console.error("Erro detalhado ao criar peça:", error);
-    return NextResponse.json({ message: error.message || "Erro interno ao criar peça." }, { status: 500 });
+    console.error("Erro ao criar peça:", error);
+    return NextResponse.json({ message: error.message || "Erro interno." }, { status: 500 });
   }
 }
