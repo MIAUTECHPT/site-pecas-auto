@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const pecas = await prisma.part.findMany({
-      include: { brand: true, model: true, category: true }, // Corrigido para 'model'
+      include: { brand: true, model: true, category: true },
       orderBy: { id: "desc" },
     });
     return NextResponse.json(pecas);
@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { reference, name, brandId, modelId, categoryId, condition, price, stock, imageUrl } = body;
+    const { reference, name, brandId, modelId, categoryId, condition, price, stock } = body;
 
     if (!reference || !name || !brandId || !modelId || !categoryId || !price) {
       return NextResponse.json({ error: "Preencha todos os campos obrigatórios." }, { status: 400 });
@@ -30,12 +30,11 @@ export async function POST(request: Request) {
         reference,
         name,
         brandId: Number(brandId),
-        modelId: Number(modelId), // Corrigido para 'modelId'
+        modelId: Number(modelId),
         categoryId: Number(categoryId),
         condition: condition || "Bom",
         price: Number(price),
         stock: Number(stock) || 1,
-        imageUrl: imageUrl || "",
       },
     });
 
