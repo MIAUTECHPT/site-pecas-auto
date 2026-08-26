@@ -18,13 +18,33 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    console.log("Dados recebidos no POST:", body); // Para veres o que está a chegar
+    const formData = await request.formData();
+    
+    // Imprimir para ver exatamente o que chega no terminal do VS Code
+    console.log("--- DADOS RECEBIDOS NO FORM DATA ---");
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
 
-    const { reference, name, brandId, modelId, categoryId, condition, price, stock } = body;
+    const name = formData.get("name")?.toString();
+    const reference = formData.get("reference")?.toString();
+    
+    // Aceita tanto brandId como brand
+    const brandId = formData.get("brandId")?.toString() || formData.get("brand")?.toString();
+    // Aceita tanto modelId como model
+    const modelId = formData.get("modelId")?.toString() || formData.get("model")?.toString();
+    // Aceita tanto categoryId como category
+    const categoryId = formData.get("categoryId")?.toString() || formData.get("category")?.toString();
+    
+    const price = formData.get("price")?.toString();
+    const stock = formData.get("stock")?.toString();
+    const condition = formData.get("condition")?.toString();
+    const description = formData.get("description")?.toString();
 
-    if (!reference || !name || !brandId || !modelId || !categoryId || !price) {
-      return NextResponse.json({ error: "Preencha todos os campos obrigatórios." }, { status: 400 });
+    if (!reference || !name || !brandId || !modelId || !price) {
+      return NextResponse.json({ 
+        message: `Campos obrigatórios em falta. Recebido -> Ref: ${reference}, Nome: ${name}, Marca: ${brandId}, Modelo: ${modelId}, Preço: ${price}` 
+      }, { status: 400 });
     }
 
     const novaPeca = await prisma.part.create({
@@ -33,17 +53,17 @@ export async function POST(request: Request) {
         name,
         brandId: Number(brandId),
         modelId: Number(modelId),
-        categoryId: Number(categoryId),
-        condition: condition || "Bom",
+        categoryId: categoryId ? Number(categoryId) : null,
+        condition: condition || "Usado",
         price: Number(price),
-        stock: Number(stock) || 1,
+        stock: stock ? Number(stock) : 1,
+        description: description || null,
       },
     });
 
     return NextResponse.json(novaPeca, { status: 201 });
   } catch (error: any) {
-    console.error("Erro detalhado do Prisma ao criar peça:", error);
-    // Devolve a mensagem de erro exata do Prisma para o browser em vez de um erro genérico
-    return NextResponse.json({ error: error.message || "Erro interno ao criar peça." }, { status: 500 });
+    console.error("Erro detalhado ao criar peça:", error);
+    return NextResponse.json({ message: error.message || "Erro interno ao criar peça." }, { status: 500 });
   }
 }
