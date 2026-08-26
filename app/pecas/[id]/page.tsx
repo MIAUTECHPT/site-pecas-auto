@@ -1,50 +1,28 @@
 ﻿import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-type PecaImagem = {
-  id: number;
-  url: string;
-  alt: string | null;
-  position: number;
-};
+export const dynamic = 'force-dynamic';
 
-type Peca = {
-  id: number;
-  reference: string;
-  name: string;
-  description: string | null;
-  price: number | null;
-  stock: number;
-  condition: string | null;
-  status: string;
+async function getPeca(id: string) {
+  const pecaId = Number(id);
+  if (isNaN(pecaId)) return null;
 
-  brand: {
-    name: string;
-  };
-
-  model: {
-    name: string;
-  };
-
-  category: {
-    name: string;
-  } | null;
-
-  images: PecaImagem[];
-};
-
-async function getPeca(id: string): Promise<Peca> {
-  const response = await fetch(
-    `http://localhost:3000/api/pecas/${id}`,
-    {
-      cache: "no-store",
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Peça não encontrada");
+  try {
+    const peca = await prisma.part.findUnique({
+      where: { id: pecaId },
+      include: {
+        images: true,
+        brand: true,
+        model: true,
+        category: true,
+      },
+    });
+    return peca;
+  } catch (error) {
+    console.error("Erro ao procurar peça:", error);
+    return null;
   }
-
-  return response.json();
 }
 
 export default async function PecaPage({
@@ -55,9 +33,13 @@ export default async function PecaPage({
   const { id } = await params;
   const peca = await getPeca(id);
 
+  if (!peca) {
+    notFound();
+  }
+
   const preco =
     peca.price !== null
-      ? peca.price.toLocaleString("pt-PT", {
+      ? Number(peca.price).toLocaleString("pt-PT", {
           style: "currency",
           currency: "EUR",
         })
@@ -81,11 +63,9 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
-
       {/* HEADER */}
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-
           <Link href="/" className="text-xl font-black">
             AUTO<span className="text-red-600">PEÇAS</span>
           </Link>
@@ -96,16 +76,13 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
           >
             ← Voltar
           </Link>
-
         </div>
       </header>
 
       {/* CONTEÚDO */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-
         {/* TÍTULO */}
         <div className="mb-8">
-
           <p className="text-sm font-bold uppercase tracking-wider text-red-600">
             Detalhes da peça
           </p>
@@ -117,45 +94,31 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
           <p className="mt-2 text-zinc-500">
             Referência: {peca.reference}
           </p>
-
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-
           {/* GALERIA */}
           <div>
-
             <div className="flex min-h-[420px] items-center justify-center overflow-hidden rounded-3xl bg-zinc-200">
-
               {imagemPrincipal ? (
                 <img
                   src={imagemPrincipal.url}
-                  alt={
-                    imagemPrincipal.alt ||
-                    peca.name
-                  }
+                  alt={peca.name}
                   className="h-full max-h-[520px] w-full object-contain"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-zinc-400">
-
-                  <div className="text-8xl">
-                    🚗
-                  </div>
-
+                  <div className="text-8xl">🚗</div>
                   <p className="mt-4 text-sm font-medium">
                     Sem imagem disponível
                   </p>
-
                 </div>
               )}
-
             </div>
 
             {/* MINIATURAS */}
             {peca.images.length > 1 && (
               <div className="mt-4 grid grid-cols-4 gap-3">
-
                 {peca.images.map((imagem) => (
                   <div
                     key={imagem.id}
@@ -163,36 +126,22 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
                   >
                     <img
                       src={imagem.url}
-                      alt={
-                        imagem.alt ||
-                        peca.name
-                      }
+                      alt={peca.name}
                       className="h-24 w-full object-cover"
                     />
                   </div>
                 ))}
-
               </div>
             )}
-
           </div>
 
           {/* INFORMAÇÃO DA PEÇA */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
-
             {/* PREÇO / STOCK */}
             <div className="flex items-start justify-between gap-6">
-
               <div>
-
-                <p className="text-sm text-zinc-500">
-                  Preço
-                </p>
-
-                <p className="mt-1 text-4xl font-black">
-                  {preco}
-                </p>
-
+                <p className="text-sm text-zinc-500">Preço</p>
+                <p className="mt-1 text-4xl font-black">{preco}</p>
               </div>
 
               <span
@@ -202,94 +151,55 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
                     : "bg-red-50 text-red-700"
                 }`}
               >
-                {peca.stock > 0
-                  ? "Disponível"
-                  : "Esgotado"}
+                {peca.stock > 0 ? "Disponível" : "Esgotado"}
               </span>
-
             </div>
 
             <div className="my-8 border-t border-zinc-100" />
 
             {/* DADOS */}
             <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl bg-zinc-50 p-4">
+                <p className="text-xs text-zinc-400">Marca</p>
+                <p className="mt-1 font-bold">{peca.brand.name}</p>
+              </div>
 
               <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Marca
-                </p>
+                <p className="text-xs text-zinc-400">Modelo</p>
+                <p className="mt-1 font-bold">{peca.model.name}</p>
+              </div>
 
+              <div className="rounded-xl bg-zinc-50 p-4">
+                <p className="text-xs text-zinc-400">Categoria</p>
                 <p className="mt-1 font-bold">
-                  {peca.brand.name}
+                  {peca.category?.name || "Sem categoria"}
                 </p>
               </div>
 
               <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Modelo
-                </p>
-
+                <p className="text-xs text-zinc-400">Estado</p>
                 <p className="mt-1 font-bold">
-                  {peca.model.name}
+                  {peca.condition || "Não indicado"}
                 </p>
               </div>
 
               <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Categoria
-                </p>
-
-                <p className="mt-1 font-bold">
-                  {peca.category?.name ||
-                    "Sem categoria"}
-                </p>
+                <p className="text-xs text-zinc-400">Stock</p>
+                <p className="mt-1 font-bold">{peca.stock} unidade(s)</p>
               </div>
 
               <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Estado
-                </p>
-
-                <p className="mt-1 font-bold">
-                  {peca.condition ||
-                    "Não indicado"}
-                </p>
+                <p className="text-xs text-zinc-400">Referência</p>
+                <p className="mt-1 font-bold">{peca.reference}</p>
               </div>
-
-              <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Stock
-                </p>
-
-                <p className="mt-1 font-bold">
-                  {peca.stock} unidade(s)
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-zinc-50 p-4">
-                <p className="text-xs text-zinc-400">
-                  Referência
-                </p>
-
-                <p className="mt-1 font-bold">
-                  {peca.reference}
-                </p>
-              </div>
-
             </div>
 
             {/* DESCRIÇÃO */}
             <div className="mt-8">
-
-              <p className="text-sm font-bold">
-                Descrição
-              </p>
-
+              <p className="text-sm font-bold">Descrição</p>
               <p className="mt-2 leading-7 text-zinc-500">
-                {peca.description ||
-                  "Sem descrição disponível."}
+                {peca.description || "Sem descrição disponível."}
               </p>
-
             </div>
 
             {/* WHATSAPP */}
@@ -301,13 +211,9 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
             >
               Pedir informações sobre esta peça
             </a>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
