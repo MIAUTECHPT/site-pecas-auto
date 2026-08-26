@@ -25,18 +25,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Preencha todos os campos obrigatórios." }, { status: 400 });
     }
 
-    const slug = (reference + "-" + name)
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") + "-" + Date.now();
-
     const novaPeca = await prisma.part.create({
       data: {
         reference,
         name,
-        slug,
         brandId: Number(brandId),
         carModelId: Number(modelId),
         categoryId: Number(categoryId),
