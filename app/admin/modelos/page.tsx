@@ -79,7 +79,12 @@ export default function AdminModelosPage() {
     if (!confirm("Tem a certeza absoluta de que pretende eliminar este modelo?")) return;
 
     try {
-      const response = await fetch(`/api/modelos/${id}`, { method: "DELETE" });
+      const response = await fetch("/api/modelos", { 
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      
       if (!response.ok) throw new Error("Erro ao eliminar o modelo.");
       await carregarDados();
     } catch (error) {
@@ -164,6 +169,7 @@ export default function AdminModelosPage() {
                     </span>
                   </div>
                   <button 
+                    type="button"
                     onClick={() => handleDelete(m.id)}
                     className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 border border-red-200 transition hover:bg-red-600 hover:text-white"
                   >
