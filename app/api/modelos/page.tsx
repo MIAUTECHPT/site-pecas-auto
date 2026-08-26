@@ -40,7 +40,7 @@ export default function AdminModelosPage() {
     carregarDados();
   }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
+ async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!nomeModelo.trim() || !brandIdSelecionada) {
       setErro("Seleciona uma marca e escreve o nome do modelo.");
@@ -60,10 +60,28 @@ export default function AdminModelosPage() {
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erro ao criar modelo");
+      // Lê a resposta como texto primeiro para evitar o erro de JSON vazio
+      const textResponse = await res.text();
+      let data;
+      try {
+        data = textResponse ? JSON.parse(textResponse) : {};
+      } catch (e) {
+        throw new Error(`Erro do servidor (${res.status}): ${textResponse || "Resposta vazia"}`);
       }
+
+      if (!res.ok) {
+        throw new Error(data.error || `Erro ao criar modelo (Status ${res.status})`);
+      }
+
+      setNomeModelo("");
+      setBrandIdSelecionada("");
+      await carregarDados();
+    } catch (err: any) {
+      setErro(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
       setNomeModelo("");
       setBrandIdSelecionada("");
