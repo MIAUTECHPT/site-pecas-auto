@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MiauTech Peças Auto",
+  title: "BR Peças Auto",
   description: "Comércio de peças e salvados automóveis",
 };
 
