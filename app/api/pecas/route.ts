@@ -19,6 +19,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log("Dados recebidos no POST:", body); // Para veres o que está a chegar
+
     const { reference, name, brandId, modelId, categoryId, condition, price, stock } = body;
 
     if (!reference || !name || !brandId || !modelId || !categoryId || !price) {
@@ -40,7 +42,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(novaPeca, { status: 201 });
   } catch (error: any) {
-    console.error("Erro ao criar peça:", error);
+    console.error("Erro detalhado do Prisma ao criar peça:", error);
+    // Devolve a mensagem de erro exata do Prisma para o browser em vez de um erro genérico
     return NextResponse.json({ error: error.message || "Erro interno ao criar peça." }, { status: 500 });
   }
 }
