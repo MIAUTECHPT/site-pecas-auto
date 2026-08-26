@@ -229,7 +229,7 @@ export default function PecasPage() {
         )}
 
         <section className="mb-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-6 text-2xl font-bold text-black">
+          <h2 className="mb-6 text-2xl font-bold text-zinc-900">
             Nova peça
           </h2>
 
@@ -238,7 +238,7 @@ export default function PecasPage() {
             <div className="grid gap-5 md:grid-cols-2">
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Referência *
                 </label>
 
@@ -248,12 +248,12 @@ export default function PecasPage() {
                   onChange={handleChange}
                   required
                   placeholder="Ex.: BMW-001"
-                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Nome da peça *
                 </label>
 
@@ -263,12 +263,12 @@ export default function PecasPage() {
                   onChange={handleChange}
                   required
                   placeholder="Ex.: Guarda-lamas direito"
-                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Marca *
                 </label>
 
@@ -277,12 +277,12 @@ export default function PecasPage() {
                   value={form.brandId}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
                 >
-                  <option value="">Selecionar marca</option>
+                  <option value="" className="text-zinc-500">Selecionar marca</option>
 
                   {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
+                    <option key={brand.id} value={brand.id} className="text-zinc-900">
                       {brand.name}
                     </option>
                   ))}
@@ -290,7 +290,7 @@ export default function PecasPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Modelo *
                 </label>
 
@@ -300,16 +300,16 @@ export default function PecasPage() {
                   onChange={handleChange}
                   required
                   disabled={!form.brandId}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none disabled:bg-zinc-100 focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none disabled:bg-zinc-100 disabled:text-zinc-400 focus:border-red-500"
                 >
-                  <option value="">
+                  <option value="" className="text-zinc-500">
                     {form.brandId
                       ? "Selecionar modelo"
                       : "Escolha primeiro a marca"}
                   </option>
 
                   {modelosDisponiveis.map((model) => (
-                    <option key={model.id} value={model.id}>
+                    <option key={model.id} value={model.id} className="text-zinc-900">
                       {model.name}
                     </option>
                   ))}
@@ -317,7 +317,7 @@ export default function PecasPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Categoria
                 </label>
 
@@ -325,12 +325,12 @@ export default function PecasPage() {
                   name="categoryId"
                   value={form.categoryId}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
                 >
-                  <option value="">Sem categoria</option>
+                  <option value="" className="text-zinc-500">Sem categoria</option>
 
                   {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
+                    <option key={category.id} value={category.id} className="text-zinc-900">
                       {category.name}
                     </option>
                   ))}
@@ -338,7 +338,7 @@ export default function PecasPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Estado
                 </label>
 
@@ -346,18 +346,18 @@ export default function PecasPage() {
                   name="condition"
                   value={form.condition}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
                 >
-                  <option value="Usado">Usado</option>
-                  <option value="Novo">Novo</option>
-                  <option value="Recondicionado">
+                  <option value="Usado" className="text-zinc-900">Usado</option>
+                  <option value="Novo" className="text-zinc-900">Novo</option>
+                  <option value="Recondicionado" className="text-zinc-900">
                     Recondicionado
                   </option>
                 </select>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Preço (€)
                 </label>
 
@@ -369,12 +369,12 @@ export default function PecasPage() {
                   value={form.preco}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                <label className="mb-2 block text-sm font-semibold text-zinc-900">
                   Stock
                 </label>
 
@@ -384,14 +384,14 @@ export default function PecasPage() {
                   min="0"
                   value={form.stock}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
                 />
               </div>
 
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
+              <label className="mb-2 block text-sm font-semibold text-zinc-900">
                 Descrição
               </label>
 
@@ -401,7 +401,7 @@ export default function PecasPage() {
                 onChange={handleChange}
                 rows={4}
                 placeholder="Descrição da peça..."
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
               />
             </div>
 
@@ -418,7 +418,7 @@ export default function PecasPage() {
 
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-black">
+            <h2 className="text-2xl font-bold text-zinc-900">
               Peças existentes
             </h2>
 
@@ -426,7 +426,7 @@ export default function PecasPage() {
               type="button"
               onClick={carregarDados}
               disabled={aCarregar}
-              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-zinc-50 disabled:opacity-50"
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-50"
             >
               {aCarregar ? "A carregar..." : "Atualizar"}
             </button>
@@ -447,54 +447,54 @@ export default function PecasPage() {
 
                 <table className="w-full text-left text-sm">
 
-                  <thead className="border-b border-zinc-200 bg-zinc-50">
+                  <thead className="border-b border-zinc-200 bg-zinc-100 font-bold text-zinc-900">
                     <tr>
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Referência
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Peça
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Marca
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Modelo
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Categoria
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Preço
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Stock
                       </th>
 
-                      <th className="px-5 py-4 font-bold">
+                      <th className="px-5 py-4">
                         Estado
                       </th>
                     </tr>
                   </thead>
 
-                  <tbody>
+                  <tbody className="font-medium text-zinc-900">
 
                     {pecas.map((peca) => (
                       <tr
                         key={peca.id}
-                        className="border-b border-zinc-100 last:border-0"
+                        className="border-b border-zinc-200 hover:bg-zinc-50 last:border-0"
                       >
-                        <td className="px-5 py-4 font-mono">
+                        <td className="px-5 py-4 font-mono text-zinc-700">
                           {peca.reference}
                         </td>
 
-                        <td className="px-5 py-4 font-semibold">
+                        <td className="px-5 py-4 font-bold text-black">
                           {peca.name}
                         </td>
 
@@ -510,7 +510,7 @@ export default function PecasPage() {
                           {peca.category?.name || "-"}
                         </td>
 
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 font-semibold">
                           {peca.price !== null
                             ? `${peca.price.toFixed(2)} €`
                             : "-"}

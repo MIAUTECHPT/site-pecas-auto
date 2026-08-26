@@ -60,12 +60,12 @@ export default function AdminMarcasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 text-zinc-900">
+    <div className="min-h-screen bg-zinc-100 p-8 text-zinc-900">
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-black">Gestão de Marcas</h1>
-            <p className="text-sm text-zinc-500">Adicione e consulte as marcas disponíveis no sistema.</p>
+            <h1 className="text-3xl font-black text-zinc-900">Gestão de Marcas</h1>
+            <p className="text-sm text-zinc-600">Adicione e consulte as marcas disponíveis no sistema.</p>
           </div>
           <a href="/admin/salvados" className="text-sm font-semibold text-red-600 hover:underline">
             ← Voltar aos Salvados
@@ -74,7 +74,7 @@ export default function AdminMarcasPage() {
 
         {/* Formulário para adicionar */}
         <div className="mb-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-bold">Adicionar nova marca</h2>
+          <h2 className="mb-4 text-lg font-bold text-zinc-900">Adicionar nova marca</h2>
           
           <form onSubmit={handleSubmit} className="flex gap-4">
             <input
@@ -82,7 +82,7 @@ export default function AdminMarcasPage() {
               value={nomeMarca}
               onChange={(e) => setNomeMarca(e.target.value)}
               placeholder="Nome da marca (ex: BMW, Audi...)"
-              className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
             />
             <button
               type="submit"
@@ -97,22 +97,22 @@ export default function AdminMarcasPage() {
         </div>
 
         {/* Listagem de marcas */}
-        <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
-          <div className="border-b border-zinc-200 px-6 py-4">
-            <h2 className="font-bold">Marcas registadas ({marcas.length})</h2>
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="border-b border-zinc-200 bg-zinc-100 px-6 py-4">
+            <h2 className="font-bold text-zinc-900">Marcas registadas ({marcas.length})</h2>
           </div>
 
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-zinc-200">
             {marcas.length === 0 ? (
               <p className="p-6 text-center text-sm text-zinc-500">Ainda não existem marcas registadas.</p>
             ) : (
               marcas.map((marca) => (
-                <div key={marca.id} className="flex items-center justify-between px-6 py-4">
+                <div key={marca.id} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50">
                   <div>
-                    <span className="font-bold">{marca.name}</span>
-                    <span className="ml-3 text-xs text-zinc-400">slug: {marca.slug}</span>
+                    <span className="font-bold text-zinc-900">{marca.name}</span>
+                    <span className="ml-3 text-xs font-mono text-zinc-500">slug: {marca.slug}</span>
                   </div>
-                  <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">
+                  <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 border border-green-200">
                     Ativa
                   </span>
                 </div>
