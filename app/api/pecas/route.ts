@@ -4,10 +4,40 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
 
-// GET: Listar todas as peças (com as respetivas imagens e dados relacionados)
-export async function GET() {
+// GET: Listar peças (com suporte a filtros por query parameters)
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search");
+    const brandId = searchParams.get("brandId");
+    const modelId = searchParams.get("modelId");
+    const categoryId = searchParams.get("categoryId");
+
+    // Construir o objeto de filtros dinamicamente para o Prisma
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { reference: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (brandId) {
+      where.brandId = Number(brandId);
+    }
+
+    if (modelId) {
+      where.modelId = Number(modelId);
+    }
+
+    if (categoryId) {
+      where.categoryId = Number(categoryId);
+    }
+
     const pecas = await prisma.part.findMany({
+      where,
       include: {
         images: true,
         brand: true,
