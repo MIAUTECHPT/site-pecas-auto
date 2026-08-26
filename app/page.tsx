@@ -249,39 +249,6 @@ export default function Home() {
     }
   }
 
-  function handleSelecionarCategoria(catId: number) {
-    const stringId = String(catId);
-    setCategoryId(stringId);
-    pesquisarPecas(stringId);
-
-    const elemento = document.getElementById("resultados-pecas");
-    if (elemento) {
-      elemento.scrollIntoView({ behavior: "smooth" });
-    }
-  }
-
-  async function limparPesquisa() {
-    setSearch("");
-    setBrandId("");
-    setModelId("");
-    setCategoryId("");
-    setModelos([]);
-    setSearched(false);
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/pecas");
-      if (response.ok) {
-        const data = await response.json();
-        setPecas(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error("Erro ao limpar pesquisa:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <main className="min-h-screen bg-white text-zinc-900">
       {/* HEADER */}
