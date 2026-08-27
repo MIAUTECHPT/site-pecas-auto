@@ -108,30 +108,17 @@ export async function POST(request: Request) {
           if (error) {
             console.error(`Erro no upload da imagem ${i}:`, error);
           } else {
-            const { data: publicUrlData } = supabase.storage
+            const publicUrlResult = supabase.storage
               .from('images')
               .getPublicUrl(fileName);
 
             await prisma.partImage.create({
               data: {
-                url: publicUrlData.publicUrl,
+                url: publicUrlResult.data.publicUrl,
                 partId: novaPeca.id,
                 position: i,
               },
-            });TypeScript
-const publicUrlData = supabase.storage
-  .from('images')
-  .getPublicUrl(fileName);
-
-const imageUrl = publicUrlData.data.publicUrl;
-
-await prisma.partImage.create({
-  data: {
-    url: imageUrl,
-    partId: novaPeca.id,
-    position: i,
-  },
-});
+            });
           }
         }
       }
