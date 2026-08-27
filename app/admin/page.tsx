@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type Brand = {
   id: number;
@@ -48,7 +48,7 @@ export default function PecasPage() {
     descricao: "",
   });
 
-  const [imagemFile, setImagemFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
@@ -92,12 +92,6 @@ export default function PecasPage() {
     });
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files[0]) {
-      setImagemFile(e.target.files[0]);
-    }
-  }
-
   const modelosDisponiveis = models.filter(
     (model) => model.brandId === Number(form.brandId)
   );
@@ -121,8 +115,8 @@ export default function PecasPage() {
       formData.append("condition", form.condition);
       formData.append("description", form.descricao);
 
-      if (imagemFile) {
-        formData.append("image", imagemFile);
+      if (fileInputRef.current && fileInputRef.current.files?.[0]) {
+        formData.append("image", fileInputRef.current.files[0]);
       }
 
       const response = await fetch("/api/pecas", {
@@ -149,7 +143,10 @@ export default function PecasPage() {
         condition: "Usado",
         descricao: "",
       });
-      setImagemFile(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
 
       await carregarDados();
     } catch (error) {
@@ -162,6 +159,7 @@ export default function PecasPage() {
       setAGuardar(false);
     }
   }
+
   async function handleDelete(id: number) {
     if (!confirm("Tem a certeza de que pretende eliminar esta peça?")) return;
 
@@ -174,7 +172,6 @@ export default function PecasPage() {
         throw new Error("Erro ao eliminar a peça.");
       }
 
-      // Atualiza a lista após apagar
       await carregarDados();
     } catch (error) {
       console.error(error);
@@ -384,8 +381,8 @@ export default function PecasPage() {
             </label>
             <input
               type="file"
+              ref={fileInputRef}
               accept="image/*"
-              onChange={handleFileChange}
               className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
             />
           </div>
@@ -471,14 +468,14 @@ export default function PecasPage() {
                           {peca.stock}
                         </td>
                         <td className="px-5 py-4 text-right">
-  <button
-    type="button"
-    onClick={() => handleDelete(peca.id)}
-    className="font-bold text-red-600 hover:text-red-800 transition"
-  >
-    Eliminar
-  </button>
-</td>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(peca.id)}
+                            className="font-bold text-red-600 hover:text-red-800 transition"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
