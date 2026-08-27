@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import PecaClientGallery from "@/components/peca-client-gallery";
+import PecaClientGallery from "@/components/GaleriaInterativa";
 
 export const dynamic = 'force-dynamic';
 
