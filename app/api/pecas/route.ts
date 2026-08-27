@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     const condition = formData.get("condition")?.toString();
     const description = formData.get("description")?.toString();
     
-    const imageFile = formData.get("image") as File | null;
+    const imageFiles = formData.getAll("images") as File[];
 
     if (!reference || !name || !brandId || !modelId || !price) {
       return NextResponse.json({ message: "Preencha todos os campos obrigatórios." }, { status: 400 });
@@ -91,36 +91,42 @@ export async function POST(request: Request) {
       },
     });
 
-    // 2. Se houver imagem, enviar para o Bucket 'images' do Supabase
-    if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      
-      const fileName = `${Date.now()}-${imageFile.name.replace(/\s/g, '_')}`;
+    // 2. Se houver imagens, enviar para o Bucket 'images' do Supabase e guardar na BD
+    if (imageFiles && imageFiles.length > 0) {
+      for (let i = 0; i < imageFiles.length; i++) {
+        const imageFile = imageFiles[i];
 
-      const { error } = await supabase.storage
-        .from('images')
-        .upload(fileName, buffer, {
-          contentType: imageFile.type,
-          upsert: false
-        });
+        if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
+          const bytes = await imageFile.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          
+          const fileName = `${Date.now()}-${i}-${imageFile.name.replace(/\s/g, '_')}`;
 
-      if (error) {
-        console.error("Erro no upload para o Supabase:", error);
-      } else {
-        // Obter o URL público da imagem
-        const { data: publicUrlData } = supabase.storage
-          .from('images')
-          .getPublicUrl(fileName);
+          const { error } = await supabase.storage
+            .from('images')
+            .upload(fileName, buffer, {
+              contentType: imageFile.type,
+              upsert: false
+            });
 
-        // Guardar o link na tabela de imagens da peça
-        await prisma.partImage.create({
-          data: {
-            url: publicUrlData.publicUrl,
-            partId: novaPeca.id,
-            position: 0,
-          },
-        });
+          if (error) {
+            console.error(`Erro no upload da imagem ${i} para o Supabase:`, error);
+          } else {
+            // Obter o URL público da imagem
+            const { data: publicUrlData } = supabase.storage
+              .from('images')
+              .getPublicUrl(fileName);
+
+            // Guardar o link na tabela de imagens da peça com a respetiva posição
+            await prisma.partImage.create({
+              data: {
+                url: publicUrlData.publicUrl,
+                partId: novaPeca.id,
+                position: i,
+              },
+            });
+          }
+        }
       }
     }
 
