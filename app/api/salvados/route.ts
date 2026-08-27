@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { supabase } from "@/lib/supabase";
+
+export const dynamic = 'force-dynamic';
 
 // GET: Obter todos os salvados
 export async function GET() {
@@ -25,7 +26,7 @@ export async function GET() {
   }
 }
 
-// POST: Criar um novo salvado com imagens
+// POST: Criar um novo salvado com imagens no Supabase
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Criar primeiro o registo do salvado na base de dados
+    // Criar o registo do salvado na base de dados
     const newSalvage = await prisma.salvage.create({
       data: {
         reference,
@@ -60,40 +61,57 @@ export async function POST(request: Request) {
       },
     });
 
-// Processar o upload das imagens (se existirem)
+    // Processar o upload das imagens para o Supabase (mesma lógica das peças)
     const imageFiles = formData.getAll("images") as File[];
     if (imageFiles && imageFiles.length > 0) {
-      for (const file of imageFiles) {
-        if (file && file.size > 0) {
-          const bytes = await file.arrayBuffer();
+      for (let i = 0; i < imageFiles.length; i++) {
+        const imageFile = imageFiles[i];
+
+        if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
+          const bytes = await imageFile.arrayBuffer();
           const buffer = Buffer.from(bytes);
-
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-          const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, "_")}`;
-          const uploadDir = path.join(process.cwd(), "public", "uploads");
           
-          try {
-            await writeFile(path.join(uploadDir, filename), buffer);
+          const fileName = `salvage-${Date.now()}-${i}-${imageFile.name.replace(/\s/g, '_')}`;
 
-            // CORREÇÃO: Usar salvageImage conforme o seu schema.prisma
+          const { error } = await supabase.storage
+            .from('images')
+            .upload(fileName, buffer, {
+              contentType: imageFile.type,
+              upsert: false
+            });
+
+          if (error) {
+            console.error(`Erro no upload da imagem de salvado ${i}:`, error);
+          } else {
+            const publicUrlResult = supabase.storage
+              .from('images')
+              .getPublicUrl(fileName);
+
             await prisma.salvageImage.create({
               data: {
-                url: `/uploads/${filename}`,
+                url: publicUrlResult.data.publicUrl,
                 salvageId: newSalvage.id,
               },
             });
-          } catch (imgError) {
-            console.error("Erro ao guardar imagem individual:", imgError);
           }
         }
       }
     }
 
-    return NextResponse.json(newSalvage, { status: 201 });
-  } catch (error) {
+    const salvageCompleto = await prisma.salvage.findUnique({
+      where: { id: newSalvage.id },
+      include: {
+        brand: true,
+        model: true,
+        images: true,
+      },
+    });
+
+    return NextResponse.json(salvageCompleto, { status: 201 });
+  } catch (error: any) {
     console.error("Erro ao criar salvado:", error);
     return NextResponse.json(
-      { message: "Erro interno ao criar salvado (verifique se a referência já existe)." },
+      { message: error.message || "Erro interno ao criar salvado." },
       { status: 500 }
     );
   }
