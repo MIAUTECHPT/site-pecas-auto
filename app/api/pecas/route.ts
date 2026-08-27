@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
 
-// GET: Listar peças (com suporte a filtros por query parameters)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -13,7 +12,6 @@ export async function GET(request: Request) {
     const modelId = searchParams.get("modelId");
     const categoryId = searchParams.get("categoryId");
 
-    // Construir o objeto de filtros dinamicamente para o Prisma
     const where: any = {};
 
     if (search) {
@@ -76,7 +74,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Preencha todos os campos obrigatórios." }, { status: 400 });
     }
 
-    // 1. Criar a peça na base de dados
     const novaPeca = await prisma.part.create({
       data: {
         reference,
@@ -91,7 +88,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // 2. Se houver imagens, enviar para o Bucket 'images' do Supabase e guardar na BD
     if (imageFiles && imageFiles.length > 0) {
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
@@ -110,14 +106,12 @@ export async function POST(request: Request) {
             });
 
           if (error) {
-            console.error(`Erro no upload da imagem ${i} para o Supabase:`, error);
+            console.error(`Erro no upload da imagem ${i}:`, error);
           } else {
-            // Obter o URL público da imagem
             const { data: publicUrlData } = supabase.storage
               .from('images')
               .getPublicUrl(fileName);
 
-            // Guardar o link na tabela de imagens da peça com a respetiva posição
             await prisma.partImage.create({
               data: {
                 url: publicUrlData.publicUrl,
