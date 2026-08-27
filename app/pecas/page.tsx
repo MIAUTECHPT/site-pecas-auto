@@ -52,7 +52,6 @@ export default function PecasPage() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
 
-  // Função para carregar dados enviando todos os filtros para a API
   async function carregarDados(filtrosAtualizados?: {
     pesquisa?: string;
     brandId?: string;
@@ -115,7 +114,6 @@ export default function PecasPage() {
     }
   }
 
-  // Disparar a busca na API com debounce para a pesquisa e alteração imediata nos selects
   useEffect(() => {
     const timer = setTimeout(() => {
       carregarDados({ pesquisa, brandId, modelId, categoryId });
@@ -128,32 +126,22 @@ export default function PecasPage() {
     if (!brandId) {
       return models;
     }
-
-    return models.filter(
-      (model) => model.brandId === Number(brandId)
-    );
+    return models.filter((model) => model.brandId === Number(brandId));
   }, [models, brandId]);
 
-  // Apenas ordenação local, uma vez que a filtragem principal é feita na API
   const pecasOrdenadas = useMemo(() => {
     let resultado = [...pecas];
 
     if (ordenacao === "preco-menor") {
-      resultado.sort(
-        (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity)
-      );
+      resultado.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
     }
 
     if (ordenacao === "preco-maior") {
-      resultado.sort(
-        (a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity)
-      );
+      resultado.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
     }
 
     if (ordenacao === "nome") {
-      resultado.sort((a, b) =>
-        a.name.localeCompare(b.name, "pt")
-      );
+      resultado.sort((a, b) => a.name.localeCompare(b.name, "pt"));
     }
 
     return resultado;
@@ -177,21 +165,15 @@ export default function PecasPage() {
       <div className="mx-auto max-w-6xl">
 
         <div className="mb-10">
-          <a
-            href="/"
-            className="text-sm font-medium text-red-600 hover:underline"
-          >
+          <a href="/" className="text-sm font-medium text-red-600 hover:underline">
             ← Voltar ao início
           </a>
-
           <p className="mt-6 text-sm font-bold uppercase tracking-widest text-red-600">
             Stock
           </p>
-
           <h1 className="mt-2 text-4xl font-bold text-black">
             Peças auto
           </h1>
-
           <p className="mt-3 text-zinc-600">
             Encontre rapidamente a peça que procura.
           </p>
@@ -199,22 +181,15 @@ export default function PecasPage() {
 
         <section className="mb-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-black">
-              Pesquisar peças
-            </h2>
-
+            <h2 className="text-xl font-bold text-black">Pesquisar peças</h2>
             <p className="mt-1 text-sm text-zinc-500">
               Pesquise por nome, referência, marca ou modelo.
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-
             <div className="lg:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Pesquisa
-              </label>
-
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">Pesquisa</label>
               <input
                 type="text"
                 value={pesquisa}
@@ -225,17 +200,13 @@ export default function PecasPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Marca
-              </label>
-
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">Marca</label>
               <select
                 value={brandId}
                 onChange={(e) => alterarMarca(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
               >
                 <option value="">Todas as marcas</option>
-
                 {brands.map((brand) => (
                   <option key={brand.id} value={brand.id}>
                     {brand.name}
@@ -245,17 +216,13 @@ export default function PecasPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Modelo
-              </label>
-
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">Modelo</label>
               <select
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
               >
                 <option value="">Todos os modelos</option>
-
                 {modelosDisponiveis.map((model) => (
                   <option key={model.id} value={model.id}>
                     {model.name}
@@ -265,17 +232,13 @@ export default function PecasPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Categoria
-              </label>
-
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">Categoria</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
               >
                 <option value="">Todas as categorias</option>
-
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -285,10 +248,7 @@ export default function PecasPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Ordenar
-              </label>
-
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">Ordenar</label>
               <select
                 value={ordenacao}
                 onChange={(e) => setOrdenacao(e.target.value)}
@@ -296,12 +256,8 @@ export default function PecasPage() {
               >
                 <option value="">Mais recentes</option>
                 <option value="nome">Nome A-Z</option>
-                <option value="preco-menor">
-                  Preço mais baixo
-                </option>
-                <option value="preco-maior">
-                  Preço mais alto
-                </option>
+                <option value="preco-menor">Preço mais baixo</option>
+                <option value="preco-maior">Preço mais alto</option>
               </select>
             </div>
 
@@ -314,7 +270,6 @@ export default function PecasPage() {
                 Limpar filtros
               </button>
             </div>
-
           </div>
         </section>
 
@@ -335,22 +290,14 @@ export default function PecasPage() {
             <div className="mb-5 flex items-center justify-between">
               <p className="text-sm text-zinc-600">
                 <strong>{pecasOrdenadas.length}</strong>{" "}
-                {pecasOrdenadas.length === 1
-                  ? "peça encontrada"
-                  : "peças encontradas"}
+                {pecasOrdenadas.length === 1 ? "peça encontrada" : "peças encontradas"}
               </p>
             </div>
 
             {pecasOrdenadas.length === 0 ? (
               <div className="rounded-2xl border border-zinc-200 bg-white p-10 text-center">
-                <h2 className="text-xl font-bold text-black">
-                  Nenhuma peça encontrada
-                </h2>
-
-                <p className="mt-2 text-zinc-500">
-                  Tente alterar os filtros ou a pesquisa.
-                </p>
-
+                <h2 className="text-xl font-bold text-black">Nenhuma peça encontrada</h2>
+                <p className="mt-2 text-zinc-500">Tente alterar os filtros ou a pesquisa.</p>
                 <button
                   type="button"
                   onClick={limparFiltros}
@@ -370,74 +317,62 @@ export default function PecasPage() {
                   return (
                     <article
                       key={peca.id}
-                      className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                      className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md flex flex-col"
                     >
-                      {/* Imagem da Peça */}
-                      <div className="relative h-48 w-full bg-zinc-100">
+                      {/* IMAGEM DA PEÇA GARANTIDA */}
+                      <div className="relative h-48 w-full bg-zinc-100 overflow-hidden flex items-center justify-center">
                         {imagemUrl ? (
                           <img
                             src={imagemUrl}
                             alt={peca.name}
                             className="h-full w-full object-cover"
+                            onError={(e) => {
+                              // Esconde a imagem e mostra o fallback se houver erro ao carregar o URL
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                              const fallback = e.currentTarget.nextElementSibling;
+                              if (fallback) (fallback as HTMLElement).style.display = "flex";
+                            }}
                           />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-zinc-400">
-                            Sem imagem
-                          </div>
-                        )}
+                        ) : null}
+                        <div 
+                          className={`absolute inset-0 flex h-full w-full items-center justify-center text-xs font-semibold text-zinc-400 bg-zinc-100 ${imagemUrl ? 'hidden' : 'flex'}`}
+                        >
+                          Sem imagem
+                        </div>
                       </div>
 
-                      <div className="p-6">
+                      <div className="p-6 flex flex-col flex-grow justify-between">
+                        <div>
+                          <div className="mb-4 flex items-start justify-between gap-4">
+                            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-mono text-zinc-600">
+                              {peca.reference}
+                            </span>
+                            <span
+                              className={
+                                peca.stock > 0
+                                  ? "text-sm font-semibold text-green-600"
+                                  : "text-sm font-semibold text-red-600"
+                              }
+                            >
+                              {peca.stock > 0 ? `Stock: ${peca.stock}` : "Sem stock"}
+                            </span>
+                          </div>
 
-                        <div className="mb-4 flex items-start justify-between gap-4">
-                          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-mono text-zinc-600">
-                            {peca.reference}
-                          </span>
+                          <h2 className="text-xl font-bold text-black">{peca.name}</h2>
 
-                          <span
-                            className={
-                              peca.stock > 0
-                                ? "text-sm font-semibold text-green-600"
-                                : "text-sm font-semibold text-red-600"
-                            }
-                          >
-                            {peca.stock > 0
-                              ? `Stock: ${peca.stock}`
-                              : "Sem stock"}
-                          </span>
+                          <div className="mt-4 space-y-2 text-sm text-zinc-600">
+                            <p><strong>Marca:</strong> {peca.brand?.name || "—"}</p>
+                            <p><strong>Modelo:</strong> {peca.model?.name || "—"}</p>
+                            <p><strong>Categoria:</strong> {peca.category?.name || "—"}</p>
+                            <p><strong>Estado:</strong> {peca.condition || "—"}</p>
+                          </div>
+
+                          {peca.description && (
+                            <p className="mt-4 border-t border-zinc-100 pt-4 text-sm text-zinc-600">
+                              {peca.description}
+                            </p>
+                          )}
                         </div>
-
-                        <h2 className="text-xl font-bold text-black">
-                          {peca.name}
-                        </h2>
-
-                        <div className="mt-4 space-y-2 text-sm text-zinc-600">
-                          <p>
-                            <strong>Marca:</strong>{" "}
-                            {peca.brand?.name || "—"}
-                          </p>
-
-                          <p>
-                            <strong>Modelo:</strong>{" "}
-                            {peca.model?.name || "—"}
-                          </p>
-
-                          <p>
-                            <strong>Categoria:</strong>{" "}
-                            {peca.category?.name || "—"}
-                          </p>
-
-                          <p>
-                            <strong>Estado:</strong>{" "}
-                            {peca.condition || "—"}
-                          </p>
-                        </div>
-
-                        {peca.description && (
-                          <p className="mt-4 border-t border-zinc-100 pt-4 text-sm text-zinc-600">
-                            {peca.description}
-                          </p>
-                        )}
 
                         <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-5">
                           <span className="text-xl font-bold text-black">
@@ -453,7 +388,6 @@ export default function PecasPage() {
                             Contactar
                           </a>
                         </div>
-
                       </div>
                     </article>
                   );
@@ -462,7 +396,6 @@ export default function PecasPage() {
             )}
           </>
         )}
-
       </div>
     </main>
   );
