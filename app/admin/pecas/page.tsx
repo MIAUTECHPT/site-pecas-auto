@@ -60,7 +60,7 @@ export default function AdminPecasPage() {
     carregarTudo();
   }, []);
 
-  async function criarPeca(e: React.FormEvent) {
+async function criarPeca(e: React.FormEvent) {
     e.preventDefault();
     setCarregando(true);
     setErro("");
@@ -78,9 +78,11 @@ export default function AdminPecasPage() {
       formData.append("condition", condition);
       if (description) formData.append("description", description);
 
-      if (imagens) {
-        for (let i = 0; i <imagens.length; i++) {
-          formData.append("images", imagens[i]);
+      // Garantir leitura correta do input de ficheiro nativo se o state falhar
+      const fileInput = document.querySelector('input[name="images"]') as HTMLInputElement;
+      if (fileInput && fileInput.files) {
+        for (let i = 0; i < fileInput.files.length; i++) {
+          formData.append("images", fileInput.files[i]);
         }
       }
 
@@ -100,6 +102,10 @@ export default function AdminPecasPage() {
       setPrice("");
       setDescription("");
       setImagens(null);
+      
+      // Limpar visualmente o input de ficheiros do HTML
+      if (fileInput) fileInput.value = "";
+
       carregarTudo();
     } catch (err: any) {
       setErro(err.message);
