@@ -105,12 +105,15 @@ export async function POST(request: Request) {
               upsert: false
             });
 
-          if (error) {
+if (error) {
             console.error(`Erro no upload da imagem ${i}:`, error);
           } else {
             const publicUrlResult = supabase.storage
               .from('images')
               .getPublicUrl(fileName);
+
+            // <-- ADICIONE AQUI O LOG PARA TESTAR
+            console.log("URL gerado pelo Supabase:", publicUrlResult.data.publicUrl);
 
             await prisma.partImage.create({
               data: {
@@ -120,9 +123,6 @@ export async function POST(request: Request) {
               },
             });
           }
-        }
-      }
-    }
 
     return NextResponse.json(novaPeca, { status: 201 });
   } catch (error: any) {
