@@ -53,7 +53,7 @@ export default async function SalvadoDetalhePage({
 
         <div className="mt-6 grid gap-12 lg:grid-cols-2">
           {/* Galeria Interativa */}
-          <GaleriaInterativa images={salvado.images} title={salvado.title} />
+          <GaleriaInterativa images={salvado.images} name={salvado.title} />
 
           {/* Informações */}
           <div>
