@@ -14,7 +14,21 @@ async function getSalvado(id: number) {
       },
     });
     
-    return salvado;
+    if (!salvado) return null;
+
+    // Normaliza as imagens para garantir que o componente recebe sempre o formato { id, url } correto
+    const imagensNormalizadas = (salvado.images || []).map((img: any, index: number) => {
+      const urlFinal = typeof img === 'string' ? img : (img.url || img.path || img.imageUrl);
+      return {
+        id: img.id || index,
+        url: urlFinal || ""
+      };
+    }).filter(img => img.url !== "");
+
+    return {
+      ...salvado,
+      images: imagensNormalizadas
+    };
   } catch (error) {
     console.error("Erro ao buscar salvado:", error);
     return null;
