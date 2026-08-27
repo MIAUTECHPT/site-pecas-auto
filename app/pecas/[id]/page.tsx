@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import PecaClientGallery from "@/components/peca-client-gallery";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,9 @@ async function getPeca(id: string) {
     const peca = await prisma.part.findUnique({
       where: { id: pecaId },
       include: {
-        images: true,
+        images: {
+          orderBy: { position: 'asc' }
+        },
         brand: true,
         model: true,
         category: true,
@@ -45,8 +48,6 @@ export default async function PecaPage({
         })
       : "Preço sob consulta";
 
-  const imagemPrincipal = peca.images[0];
-
   const mensagem = `Olá! Gostaria de obter informações sobre esta peça.
 
 Peça: ${peca.name}
@@ -57,7 +58,7 @@ Preço: ${preco}
 
 Gostaria de saber se a peça está disponível e quais são as condições de envio.`;
 
-  const whatsappUrl = `https://wa.me/351912563416?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/351916055975?text=${encodeURIComponent(
     mensagem
   )}`;
 
@@ -97,43 +98,8 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* GALERIA */}
-          <div>
-            <div className="flex min-h-[420px] items-center justify-center overflow-hidden rounded-3xl bg-zinc-200">
-              {imagemPrincipal ? (
-                <img
-                  src={imagemPrincipal.url}
-                  alt={peca.name}
-                  className="h-full max-h-[520px] w-full object-contain"
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-zinc-400">
-                  <div className="text-8xl">🚗</div>
-                  <p className="mt-4 text-sm font-medium">
-                    Sem imagem disponível
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* MINIATURAS */}
-            {peca.images.length > 1 && (
-              <div className="mt-4 grid grid-cols-4 gap-3">
-                {peca.images.map((imagem) => (
-                  <div
-                    key={imagem.id}
-                    className="overflow-hidden rounded-xl border border-zinc-200 bg-white"
-                  >
-                    <img
-                      src={imagem.url}
-                      alt={peca.name}
-                      className="h-24 w-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* GALERIA INTERATIVA DE FOTOS */}
+          <PecaClientGallery images={peca.images} name={peca.name} />
 
           {/* INFORMAÇÃO DA PEÇA */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">

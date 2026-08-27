@@ -86,7 +86,7 @@ export default async function SalvadoDetalhePage({
 
             <div className="mt-8">
               <a
-                href={`https://wa.me/351912563416?text=${encodeURIComponent(
+                href={`https://wa.me/351916055975?text=${encodeURIComponent(
                   `Olá! Estou interessado no salvado: ${salvado.brand?.name} ${salvado.model?.name || salvado.title} (Ref: ${salvado.reference})`
                 )}`}
                 target="_blank"
