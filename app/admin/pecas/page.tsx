@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type Brand = { id: number; name: string };
 type CarModel = { id: number; name: string; brandId: number };
@@ -33,7 +33,9 @@ export default function AdminPecasPage() {
   const [stock, setStock] = useState("1");
   const [condition, setCondition] = useState("Usado");
   const [description, setDescription] = useState("");
-  const [imagens, setImagens] = useState<FileList | null>(null);
+
+  // Usar ref para garantir que apanhamos sempre os ficheiros selecionados
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
@@ -60,7 +62,7 @@ export default function AdminPecasPage() {
     carregarTudo();
   }, []);
 
-async function criarPeca(e: React.FormEvent) {
+  async function criarPeca(e: React.FormEvent) {
     e.preventDefault();
     setCarregando(true);
     setErro("");
@@ -78,11 +80,11 @@ async function criarPeca(e: React.FormEvent) {
       formData.append("condition", condition);
       if (description) formData.append("description", description);
 
-      // Garantir leitura correta do input de ficheiro nativo se o state falhar
-      const fileInput = document.querySelector('input[name="images"]') as HTMLInputElement;
-      if (fileInput && fileInput.files) {
-        for (let i = 0; i < fileInput.files.length; i++) {
-          formData.append("images", fileInput.files[i]);
+      // Ler diretamente os ficheiros através da ref do input
+      if (fileInputRef.current && fileInputRef.current.files) {
+        const files = fileInputRef.current.files;
+        for (let i = 0; i < files.length; i++) {
+          formData.append("images", files[i]);
         }
       }
 
@@ -101,10 +103,11 @@ async function criarPeca(e: React.FormEvent) {
       setName("");
       setPrice("");
       setDescription("");
-      setImagens(null);
       
-      // Limpar visualmente o input de ficheiros do HTML
-      if (fileInput) fileInput.value = "";
+      // Limpar o input de ficheiro visualmente
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
 
       carregarTudo();
     } catch (err: any) {
@@ -254,10 +257,9 @@ async function criarPeca(e: React.FormEvent) {
               <label className="block text-sm font-semibold text-zinc-700 mb-1">Imagens</label>
               <input
                 type="file"
-                name="images"
+                ref={fileInputRef}
                 multiple
                 accept="image/*"
-                onChange={(e) => setImagens(e.target.files)}
                 className="w-full rounded-xl border border-zinc-300 px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
               />
             </div>
