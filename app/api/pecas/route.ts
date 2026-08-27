@@ -126,7 +126,17 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json(novaPeca, { status: 201 });
+    const pecaCompleta = await prisma.part.findUnique({
+      where: { id: novaPeca.id },
+      include: {
+        images: true,
+        brand: true,
+        model: true,
+        category: true,
+      },
+    });
+
+    return NextResponse.json(pecaCompleta, { status: 201 });
   } catch (error: any) {
     console.error("Erro ao criar peça:", error);
     return NextResponse.json({ message: error.message || "Erro interno." }, { status: 500 });
