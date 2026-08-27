@@ -2,21 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-type Brand = {
-  id: number;
-  name: string;
-};
-
-type CarModel = {
-  id: number;
-  name: string;
-  brandId: number;
-};
-
-type Category = {
-  id: number;
-  name: string;
-};
+type Brand = { id: number; name: string };
+type CarModel = { id: number; name: string; brandId: number };
+type Category = { id: number; name: string };
 
 type Part = {
   id: number;
@@ -24,518 +12,279 @@ type Part = {
   name: string;
   price: number | null;
   stock: number;
-  condition: string | null;
   brand: Brand;
   model: CarModel;
   category: Category | null;
+  images: { id: number; url: string }[];
 };
 
-export default function PecasPage() {
+export default function AdminPecasPage() {
+  const [pecas, setPecas] = useState<Part[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [models, setModels] = useState<CarModel[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [pecas, setPecas] = useState<Part[]>([]);
 
-  const [form, setForm] = useState({
-    referencia: "",
-    nome: "",
-    brandId: "",
-    modelId: "",
-    categoryId: "",
-    preco: "",
-    stock: "1",
-    condition: "Usado",
-    descricao: "",
-  });
+  const [reference, setReference] = useState("");
+  const [name, setName] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [modelId, setModelId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("1");
+  const [condition, setCondition] = useState("Usado");
+  const [description, setDescription] = useState("");
+  const [imagens, setImagens] = useState<FileList | null>(null);
 
-  const [mensagem, setMensagem] = useState("");
+  const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
-  const [aGuardar, setAGuardar] = useState(false);
-  const [aCarregar, setACarregar] = useState(true);
+  const [sucesso, setSucesso] = useState("");
 
-  useEffect(() => {
-    carregarDados();
-  }, []);
-
-  async function carregarDados() {
-    setACarregar(true);
-    setErro("");
-
+  async function carregarTudo() {
     try {
-      const respostas = await Promise.all([
+      const [pRes, bRes, mRes, cRes] = await Promise.all([
+        fetch("/api/pecas"),
         fetch("/api/marcas"),
         fetch("/api/modelos"),
         fetch("/api/categorias"),
-        fetch("/api/pecas"),
       ]);
-
-      const [
-        brandsResponse,
-        modelsResponse,
-        categoriesResponse,
-        pecasResponse,
-      ] = respostas;
-
-      if (!brandsResponse.ok) {
-        throw new Error("Erro ao carregar marcas.");
-      }
-
-      if (!modelsResponse.ok) {
-        throw new Error("Erro ao carregar modelos.");
-      }
-
-      if (!categoriesResponse.ok) {
-        throw new Error("Erro ao carregar categorias.");
-      }
-
-      if (!pecasResponse.ok) {
-        throw new Error("Erro ao carregar peças.");
-      }
-
-      const brandsData = await brandsResponse.json();
-      const modelsData = await modelsResponse.json();
-      const categoriesData = await categoriesResponse.json();
-      const pecasData = await pecasResponse.json();
-
-      setBrands(Array.isArray(brandsData) ? brandsData : []);
-      setModels(Array.isArray(modelsData) ? modelsData : []);
-      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      setPecas(Array.isArray(pecasData) ? pecasData : []);
-    } catch (error) {
-      console.error(error);
-
-      setErro(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível carregar os dados."
-      );
-    } finally {
-      setACarregar(false);
+      if (pRes.ok) setPecas(await pRes.json());
+      if (bRes.ok) setBrands(await bRes.json());
+      if (mRes.ok) setModels(await mRes.json());
+      if (cRes.ok) setCategories(await cRes.json());
+    } catch (e) {
+      console.error(e);
     }
   }
 
-  function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) {
-    const { name, value } = e.target;
+  useEffect(() => {
+    carregarTudo();
+  }, []);
 
-    setForm((atual) => ({
-      ...atual,
-      [name]: value,
-    }));
-
-    if (name === "brandId") {
-      setForm((atual) => ({
-        ...atual,
-        brandId: value,
-        modelId: "",
-      }));
-    }
-  }
-
-  const modelosDisponiveis = models.filter(
-    (model) => model.brandId === Number(form.brandId)
-  );
-
-  async function handleSubmit(e: React.FormEvent) {
+  async function criarPeca(e: React.FormEvent) {
     e.preventDefault();
-
-    setMensagem("");
+    setCarregando(true);
     setErro("");
-    setAGuardar(true);
+    setSucesso("");
 
     try {
-      const response = await fetch("/api/pecas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const formData = new FormData();
+      formData.append("reference", reference);
+      formData.append("name", name);
+      formData.append("brandId", brandId);
+      formData.append("modelId", modelId);
+      if (categoryId) formData.append("categoryId", categoryId);
+      formData.append("price", price);
+      formData.append("stock", stock);
+      formData.append("condition", condition);
+      if (description) formData.append("description", description);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Erro ao guardar a peça."
-        );
+      if (imagens) {
+        for (let i = 0; i <imagens.length; i++) {
+          formData.append("images", imagens[i]);
+        }
       }
 
-      setMensagem("Peça guardada com sucesso.");
-
-      setForm({
-        referencia: "",
-        nome: "",
-        brandId: "",
-        modelId: "",
-        categoryId: "",
-        preco: "",
-        stock: "1",
-        condition: "Usado",
-        descricao: "",
+      const res = await fetch("/api/pecas", {
+        method: "POST",
+        body: formData,
       });
 
-      await carregarDados();
-    } catch (error) {
-      console.error(error);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Erro ao criar peça.");
+      }
 
-      setErro(
-        error instanceof Error
-          ? error.message
-          : "Erro ao guardar a peça."
-      );
+      setSucesso("Peça criada com sucesso!");
+      setReference("");
+      setName("");
+      setPrice("");
+      setDescription("");
+      setImagens(null);
+      carregarTudo();
+    } catch (err: any) {
+      setErro(err.message);
     } finally {
-      setAGuardar(false);
+      setCarregando(false);
     }
   }
 
-  return (
-    <main className="min-h-screen bg-zinc-100 px-6 py-10">
-      <div className="mx-auto max-w-6xl">
+  const modelosFiltrados = brandId
+    ? models.filter((m) => m.brandId === Number(brandId))
+    : models;
 
-        <div className="mb-8">
-          <a
-            href="/admin"
-            className="text-sm font-medium text-red-600 hover:underline"
-          >
+  return (
+    <main className="min-h-screen bg-zinc-100 p-6">
+      <div className="mx-auto max-w-4xl space-y-8">
+        <div>
+          <a href="/admin" className="text-sm font-medium text-red-600 hover:underline">
             ← Voltar ao painel
           </a>
-
-          <p className="mt-6 text-sm font-bold uppercase tracking-widest text-red-600">
-            Administração
-          </p>
-
-          <h1 className="mt-2 text-4xl font-bold text-black">
-            Gestão de peças
-          </h1>
-
-          <p className="mt-2 text-zinc-600">
-            Adiciona peças ao catálogo e consulta as peças existentes.
-          </p>
+          <h1 className="mt-2 text-3xl font-bold text-black">Gerir Peças</h1>
         </div>
 
-        {mensagem && (
-          <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-700">
-            {mensagem}
-          </div>
-        )}
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-black mb-4">Adicionar Nova Peça</h2>
 
-        {erro && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-            {erro}
-          </div>
-        )}
+          {erro && <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
+          {sucesso && <div className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-700">{sucesso}</div>}
 
-        <section className="mb-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-6 text-2xl font-bold text-zinc-900">
-            Nova peça
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-
-            <div className="grid gap-5 md:grid-cols-2">
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Referência *
-                </label>
-
-                <input
-                  name="referencia"
-                  value={form.referencia}
-                  onChange={handleChange}
-                  required
-                  placeholder="Ex.: BMW-001"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Nome da peça *
-                </label>
-
-                <input
-                  name="nome"
-                  value={form.nome}
-                  onChange={handleChange}
-                  required
-                  placeholder="Ex.: Guarda-lamas direito"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Marca *
-                </label>
-
-                <select
-                  name="brandId"
-                  value={form.brandId}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
-                >
-                  <option value="" className="text-zinc-500">Selecionar marca</option>
-
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id} className="text-zinc-900">
-                      {brand.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Modelo *
-                </label>
-
-                <select
-                  name="modelId"
-                  value={form.modelId}
-                  onChange={handleChange}
-                  required
-                  disabled={!form.brandId}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none disabled:bg-zinc-100 disabled:text-zinc-400 focus:border-red-500"
-                >
-                  <option value="" className="text-zinc-500">
-                    {form.brandId
-                      ? "Selecionar modelo"
-                      : "Escolha primeiro a marca"}
-                  </option>
-
-                  {modelosDisponiveis.map((model) => (
-                    <option key={model.id} value={model.id} className="text-zinc-900">
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Categoria
-                </label>
-
-                <select
-                  name="categoryId"
-                  value={form.categoryId}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
-                >
-                  <option value="" className="text-zinc-500">Sem categoria</option>
-
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id} className="text-zinc-900">
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Estado
-                </label>
-
-                <select
-                  name="condition"
-                  value={form.condition}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
-                >
-                  <option value="Usado" className="text-zinc-900">Usado</option>
-                  <option value="Novo" className="text-zinc-900">Novo</option>
-                  <option value="Recondicionado" className="text-zinc-900">
-                    Recondicionado
-                  </option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Preço (€)
-                </label>
-
-                <input
-                  name="preco"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.preco}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                  Stock
-                </label>
-
-                <input
-                  name="stock"
-                  type="number"
-                  min="0"
-                  value={form.stock}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 outline-none focus:border-red-500"
-                />
-              </div>
-
-            </div>
-
+          <form onSubmit={criarPeca} className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-900">
-                Descrição
-              </label>
-
-              <textarea
-                name="descricao"
-                value={form.descricao}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Descrição da peça..."
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-950 placeholder:text-zinc-500 outline-none focus:border-red-500"
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Referência</label>
+              <input
+                type="text"
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                required
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={aGuardar}
-              className="rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {aGuardar ? "A guardar..." : "Guardar peça"}
-            </button>
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Nome da Peça</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+              />
+            </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Marca</label>
+              <select
+                value={brandId}
+                onChange={(e) => {
+                  setBrandId(e.target.value);
+                  setModelId("");
+                }}
+                required
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+              >
+                <option value="">Selecione a marca</option>
+                {brands.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Modelo</label>
+              <select
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                required
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+              >
+                <option value="">Selecione o modelo</option>
+                {modelosFiltrados.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Categoria</label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+              >
+                <option value="">Sem categoria</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Preço (€)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Stock</label>
+              <input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                required
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Estado</label>
+              <select
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+              >
+                <option value="Usado">Usado</option>
+                <option value="Novo">Novo</option>
+                <option value="Recondicionado">Recondicionado</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Descrição</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-zinc-700 mb-1">Imagens</label>
+              <input
+                type="file"
+                name="images"
+                multiple
+                accept="image/*"
+                onChange={(e) => setImagens(e.target.files)}
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                disabled={carregando}
+                className="w-full rounded-xl bg-red-600 px-5 py-3 font-bold text-white hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {carregando ? "A guardar..." : "Criar Peça"}
+              </button>
+            </div>
           </form>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-zinc-900">
-              Peças existentes
-            </h2>
-
-            <button
-              type="button"
-              onClick={carregarDados}
-              disabled={aCarregar}
-              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-50"
-            >
-              {aCarregar ? "A carregar..." : "Atualizar"}
-            </button>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-
-            {aCarregar ? (
-              <div className="p-8 text-center text-zinc-500">
-                A carregar peças...
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-black mb-4">Peças Existentes ({pecas.length})</h2>
+          <div className="divide-y divide-zinc-100">
+            {pecas.map((p) => (
+              <div key={p.id} className="py-3 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-black">{p.name} <span className="text-xs font-mono text-zinc-500">({p.reference})</span></p>
+                  <p className="text-xs text-zinc-500">{p.brand?.name} - {p.model?.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-black">{p.price !== null ? `${p.price} €` : "Sob consulta"}</p>
+                  <p className="text-xs text-zinc-500">Imagens: {p.images?.length || 0}</p>
+                </div>
               </div>
-            ) : pecas.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
-                Ainda não existem peças.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-
-                <table className="w-full text-left text-sm">
-
-                  <thead className="border-b border-zinc-200 bg-zinc-100 font-bold text-zinc-900">
-                    <tr>
-                      <th className="px-5 py-4">
-                        Referência
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Peça
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Marca
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Modelo
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Categoria
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Preço
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Stock
-                      </th>
-
-                      <th className="px-5 py-4">
-                        Estado
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="font-medium text-zinc-900">
-
-                    {pecas.map((peca) => (
-                      <tr
-                        key={peca.id}
-                        className="border-b border-zinc-200 hover:bg-zinc-50 last:border-0"
-                      >
-                        <td className="px-5 py-4 font-mono text-zinc-700">
-                          {peca.reference}
-                        </td>
-
-                        <td className="px-5 py-4 font-bold text-black">
-                          {peca.name}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {peca.brand?.name || "-"}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {peca.model?.name || "-"}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {peca.category?.name || "-"}
-                        </td>
-
-                        <td className="px-5 py-4 font-semibold">
-                          {peca.price !== null
-                            ? `${peca.price.toFixed(2)} €`
-                            : "-"}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {peca.stock}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {peca.condition || "-"}
-                        </td>
-                      </tr>
-                    ))}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-            )}
-
+            ))}
           </div>
         </section>
-
       </div>
     </main>
   );

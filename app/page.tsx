@@ -347,92 +347,92 @@ export default function Home() {
                   placeholder="Ex.: farolim BMW Série 3"
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
                 />
-            </div>
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                    Marca
+                  </label>
+                  <select
+                    value={brandId}
+                    onChange={(e) => {
+                      setBrandId(e.target.value);
+                      setModelId("");
+                    }}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none"
+                  >
+                    <option value="">Todas as marcas</option>
+                    {marcas.map((marca) => (
+                      <option key={marca.id} value={marca.id}>
+                        {marca.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                    Modelo
+                  </label>
+                  <select
+                    value={modelId}
+                    onChange={(e) => setModelId(e.target.value)}
+                    disabled={!brandId}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Selecionar modelo</option>
+                    {modelos.map((modelo) => (
+                      <option key={modelo.id} value={modelo.id}>
+                        {modelo.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                  Marca
+                  Categoria
                 </label>
                 <select
-                  value={brandId}
-                  onChange={(e) => {
-                    setBrandId(e.target.value);
-                    setModelId("");
-                  }}
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none"
                 >
-                  <option value="">Todas as marcas</option>
-                  {marcas.map((marca) => (
-                    <option key={marca.id} value={marca.id}>
-                      {marca.name}
+                  <option value="">Todas as categorias</option>
+                  {categoriasApi.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                  Modelo
-                </label>
-                <select
-                  value={modelId}
-                  onChange={(e) => setModelId(e.target.value)}
-                  disabled={!brandId}
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Selecionar modelo</option>
-                  {modelos.map((modelo) => (
-                    <option key={modelo.id} value={modelo.id}>
-                      {modelo.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                Categoria
-              </label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none"
+              <button
+                type="button"
+                onClick={() => pesquisarPecas()}
+                disabled={loading}
+                className="w-full rounded-xl bg-zinc-950 px-5 py-4 font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <option value="">Todas as categorias</option>
-                {categoriasApi.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-              ))}
-              </select>
+                {loading ? "A pesquisar..." : "🔎 Pesquisar peças"}
+              </button>
+
+              {searched && (
+                <button
+                  type="button"
+                  onClick={limparPesquisa}
+                  className="w-full text-sm font-semibold text-zinc-500 hover:text-red-600"
+                >
+                  Limpar pesquisa
+                </button>
+              )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => pesquisarPecas()}
-              disabled={loading}
-              className="w-full rounded-xl bg-zinc-950 px-5 py-4 font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "A pesquisar..." : "🔎 Pesquisar peças"}
-          </button>
-
-          {searched && (
-            <button
-              type="button"
-              onClick={limparPesquisa}
-              className="w-full text-sm font-semibold text-zinc-500 hover:text-red-600"
-            >
-              Limpar pesquisa
-            </button>
-          )}
+          </div>
         </div>
-      </div>
-      </div>
-    </section>
+      </section>
 
-    {/* CATEGORIAS */}
+    {/* CATEGORias */}
     <section className="mx-auto max-w-7xl px-6 py-12">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
@@ -550,12 +550,17 @@ export default function Home() {
                     </p>
 
                     <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
-                      <span className="text-xl font-black">
-                        {peca.price.toLocaleString("pt-PT", {
-                          style: "currency",
-                          currency: "EUR",
-                        })}
-                      </span>
+                      {/* Bloco de Preço com indicação de IVA */}
+                      <div>
+                        <span className="text-xl font-black">
+                          {peca.price.toLocaleString("pt-PT", {
+                            style: "currency",
+                            currency: "EUR",
+                          })}
+                        </span>
+                        <p className="text-[11px] text-zinc-400">+ IVA</p>
+                      </div>
+
                       <a
                         href={`/pecas/${peca.id}`}
                         className="rounded-full bg-zinc-100 px-4 py-2 text-sm font-bold transition hover:bg-red-600 hover:text-white"
