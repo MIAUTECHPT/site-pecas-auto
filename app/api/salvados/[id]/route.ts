@@ -41,3 +41,32 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await context.params;
+    const id = Number(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: "ID inválido" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.salvage.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, message: "Salvado apagado com sucesso" }, { status: 200 });
+  } catch (error) {
+    console.error("Erro ao apagar salvado:", error);
+    return NextResponse.json(
+      { error: "Erro interno ao apagar o salvado" },
+      { status: 500 }
+    );
+  }
+}

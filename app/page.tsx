@@ -690,7 +690,7 @@ export default function Home() {
             <div className="mt-4 space-y-3 text-sm text-zinc-500">
               <p>📞 916 055 975</p>
               <p>📍 Rua Prof. Lídio Correia Bloco Sul 684 Picoto, 3720-798, Vila de Cucujães, Portugal</p>
-              <p>📄 NIF: (Adicionar se necessário)</p>
+              <p>📄 NIF:225616785</p>
               
               <div>
                 <a
