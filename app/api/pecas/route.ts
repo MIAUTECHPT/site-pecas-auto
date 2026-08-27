@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     const condition = formData.get("condition")?.toString();
     const description = formData.get("description")?.toString();
     
-    const imageFiles = formData.getAll("images") as File[];
+    const imageFiles = formData.getAll("image") as File[];
 
     if (!reference || !name || !brandId || !modelId || !price) {
       return NextResponse.json({ message: "Preencha todos os campos obrigatórios." }, { status: 400 });
