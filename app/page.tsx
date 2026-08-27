@@ -688,12 +688,13 @@ export default function Home() {
           <div>
             <h3 className="font-bold">Contactos</h3>
             <div className="mt-4 space-y-3 text-sm text-zinc-500">
-              <p>📞 912 563 416</p>
-              <p>✉ geral@empresa.pt</p>
+              <p>📞 916 055 975</p>
+              <p>📍 Rua Prof. Lídio Correia Bloco Sul 684 Picoto, 3720-798, Vila de Cucujães, Portugal</p>
+              <p>📄 NIF: (Adicionar se necessário)</p>
               
               <div>
                 <a
-                  href="https://wa.me/351912563416?text=Olá,%20gostaria%20de%20obter%20mais%20informações."
+                  href="https://wa.me/351916055975?text=Olá,%20gostaria%20de%20obter%20mais%20informações."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
