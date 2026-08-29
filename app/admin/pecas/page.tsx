@@ -340,6 +340,7 @@ export default function AdminPecasPage() {
                     <p className="text-xs text-zinc-500">Imagens: {p.images?.length || 0}</p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => iniciarEdicao(p)}
                     className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition"
                   >
