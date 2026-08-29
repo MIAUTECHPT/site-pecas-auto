@@ -96,7 +96,7 @@ export default function AdminMarcasPage() {
           {erro && <p className="mt-3 text-sm font-semibold text-red-600">{erro}</p>}
         </div>
 
-        {/* Listagem de marcas */}
+        {/* Listagem de marcas teste */}
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
           <div className="border-b border-zinc-200 bg-zinc-100 px-6 py-4">
             <h2 className="font-bold text-zinc-900">Marcas registadas ({marcas.length})</h2>
