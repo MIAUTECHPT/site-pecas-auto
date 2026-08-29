@@ -4,90 +4,68 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+// GET: Obter todas as peças
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
-    const brandId = searchParams.get("brandId");
-    const modelId = searchParams.get("modelId");
-    const categoryId = searchParams.get("categoryId");
-
-    const where: any = {};
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { reference: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    if (brandId) {
-      where.brandId = Number(brandId);
-    }
-
-    if (modelId) {
-      where.modelId = Number(modelId);
-    }
-
-    if (categoryId) {
-      where.categoryId = Number(categoryId);
-    }
-
-    const pecas = await prisma.part.findMany({
-      where,
+    const parts = await prisma.part.findMany({
       include: {
-        images: true,
         brand: true,
         model: true,
         category: true,
+        images: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { id: "desc" },
     });
 
-    return NextResponse.json(pecas, { status: 200 });
-  } catch (error: any) {
-    console.error("Erro ao listar peças:", error);
-    return NextResponse.json({ message: error.message || "Erro interno." }, { status: 500 });
+    return NextResponse.json(parts);
+  } catch (error) {
+    console.error("Erro ao buscar peças:", error);
+    return NextResponse.json(
+      { error: "Erro interno ao buscar peças" },
+      { status: 500 }
+    );
   }
 }
 
+// POST: Criar uma nova peça com imagens no Supabase
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     
-    const name = formData.get("name")?.toString();
-    const reference = formData.get("reference")?.toString();
-    const brandId = formData.get("brandId")?.toString();
-    const modelId = formData.get("modelId")?.toString();
-    const categoryId = formData.get("categoryId")?.toString();
-    const price = formData.get("price")?.toString();
-    const stock = formData.get("stock")?.toString();
-    const condition = formData.get("condition")?.toString();
-    const description = formData.get("description")?.toString();
-    
-    const imageFiles = formData.getAll("image") as File[];
+    const reference = formData.get("reference") as string;
+    const name = formData.get("name") as string;
+    const brandId = formData.get("brandId") as string;
+    const modelId = formData.get("modelId") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const price = formData.get("price") as string;
+    const stock = formData.get("stock") as string;
+    const condition = formData.get("condition") as string;
+    const description = formData.get("description") as string;
 
     if (!reference || !name || !brandId || !modelId || !price) {
-      return NextResponse.json({ message: "Preencha todos os campos obrigatórios." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Preencha todos os campos obrigatórios." },
+        { status: 400 }
+      );
     }
 
-    const novaPeca = await prisma.part.create({
+    // Criar o registo da peça na base de dados
+    const newPart = await prisma.part.create({
       data: {
         reference,
         name,
         brandId: Number(brandId),
         modelId: Number(modelId),
         categoryId: categoryId ? Number(categoryId) : null,
-        condition: condition || "Usado",
-        price: Number(price),
+        price: price ? parseFloat(price) : null,
         stock: stock ? Number(stock) : 1,
+        condition: condition || "Usado",
         description: description || null,
       },
     });
 
+    // Processar o upload das imagens para o Supabase (igual aos salvados)
+    const imageFiles = formData.getAll("images") as File[];
     if (imageFiles && imageFiles.length > 0) {
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
@@ -96,7 +74,7 @@ export async function POST(request: Request) {
           const bytes = await imageFile.arrayBuffer();
           const buffer = Buffer.from(bytes);
           
-          const fileName = `${Date.now()}-${i}-${imageFile.name.replace(/\s/g, '_')}`;
+          const fileName = `part-${Date.now()}-${i}-${imageFile.name.replace(/\s/g, '_')}`;
 
           const { error } = await supabase.storage
             .from('images')
@@ -106,19 +84,16 @@ export async function POST(request: Request) {
             });
 
           if (error) {
-            console.error(`Erro no upload da imagem ${i}:`, error);
+            console.error(`Erro no upload da imagem da peça ${i}:`, error);
           } else {
             const publicUrlResult = supabase.storage
               .from('images')
               .getPublicUrl(fileName);
 
-            console.log("URL gerado pelo Supabase:", publicUrlResult.data.publicUrl);
-
             await prisma.partImage.create({
               data: {
                 url: publicUrlResult.data.publicUrl,
-                partId: novaPeca.id,
-                position: i,
+                partId: newPart.id,
               },
             });
           }
@@ -126,19 +101,22 @@ export async function POST(request: Request) {
       }
     }
 
-    const pecaCompleta = await prisma.part.findUnique({
-      where: { id: novaPeca.id },
+    const partCompleta = await prisma.part.findUnique({
+      where: { id: newPart.id },
       include: {
-        images: true,
         brand: true,
         model: true,
         category: true,
+        images: true,
       },
     });
 
-    return NextResponse.json(pecaCompleta, { status: 201 });
+    return NextResponse.json(partCompleta, { status: 201 });
   } catch (error: any) {
     console.error("Erro ao criar peça:", error);
-    return NextResponse.json({ message: error.message || "Erro interno." }, { status: 500 });
+    return NextResponse.json(
+      { message: error.message || "Erro interno ao criar peça." },
+      { status: 500 }
+    );
   }
 }
