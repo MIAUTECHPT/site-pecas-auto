@@ -63,7 +63,8 @@ export async function POST(request: Request) {
         description: description || null,
       },
     });
-// Processar o upload das imagens para o Supabase de forma segura
+
+    // Processar o upload das imagens para o Supabase de forma segura
     const imageFiles = formData.getAll("images");
     
     for (let i = 0; i < imageFiles.length; i++) {
