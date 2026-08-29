@@ -34,7 +34,7 @@ export default function AdminPecasPage() {
   const [condition, setCondition] = useState("Usado");
   const [description, setDescription] = useState("");
 
-  // Usar ref para garantir que apanhamos sempre os ficheiros selecionados
+  // Usar uma Ref direta para o input de ficheiro
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [carregando, setCarregando] = useState(false);
@@ -80,11 +80,11 @@ export default function AdminPecasPage() {
       formData.append("condition", condition);
       if (description) formData.append("description", description);
 
-      // Ler diretamente os ficheiros através da ref do input
-      if (fileInputRef.current && fileInputRef.current.files) {
-        const files = fileInputRef.current.files;
-        for (let i = 0; i < files.length; i++) {
-          formData.append("images", files[i]);
+      // Ler diretamente do DOM no momento do submit (Garante que apanha múltiplos ficheiros)
+      const fileInput = fileInputRef.current;
+      if (fileInput && fileInput.files) {
+        for (let i = 0; i < fileInput.files.length; i++) {
+          formData.append("images", fileInput.files[i]);
         }
       }
 
@@ -103,6 +103,9 @@ export default function AdminPecasPage() {
       setName("");
       setPrice("");
       setDescription("");
+      setBrandId("");
+      setModelId("");
+      setCategoryId("");
       
       // Limpar o input de ficheiro visualmente
       if (fileInputRef.current) {
