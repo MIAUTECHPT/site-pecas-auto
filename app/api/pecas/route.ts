@@ -63,40 +63,48 @@ export async function POST(request: Request) {
         description: description || null,
       },
     });
+// Processar o upload das imagens para o Supabase de forma segura
+    const imageFiles = formData.getAll("images");
+    
+    for (let i = 0; i < imageFiles.length; i++) {
+      const imageFile = imageFiles[i];
 
-    // Processar o upload das imagens para o Supabase (igual aos salvados)
-    const imageFiles = formData.getAll("images") as File[];
-    if (imageFiles && imageFiles.length > 0) {
-      for (let i = 0; i < imageFiles.length; i++) {
-        const imageFile = imageFiles[i];
-
-        if (imageFile && imageFile.size > 0 && imageFile.name !== "undefined") {
+      // Verificar se é realmente um objeto File válido com conteúdo
+      if (imageFile instanceof File && imageFile.size > 0) {
+        try {
           const bytes = await imageFile.arrayBuffer();
           const buffer = Buffer.from(bytes);
           
-          const fileName = `part-${Date.now()}-${i}-${imageFile.name.replace(/\s/g, '_')}`;
+          const cleanName = imageFile.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+          const fileName = `part-${newPart.id}-${Date.now()}-${i}-${cleanName}`;
 
-          const { error } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('images')
             .upload(fileName, buffer, {
               contentType: imageFile.type,
               upsert: false
             });
 
-          if (error) {
-            console.error(`Erro no upload da imagem da peça ${i}:`, error);
-          } else {
-            const publicUrlResult = supabase.storage
-              .from('images')
-              .getPublicUrl(fileName);
+          if (uploadError) {
+            console.error(`Erro no upload da imagem ${i} para o Supabase:`, uploadError);
+            continue;
+          }
 
+          const { data: publicUrlData } = supabase.storage
+            .from('images')
+            .getPublicUrl(fileName);
+
+          if (publicUrlData?.publicUrl) {
             await prisma.partImage.create({
               data: {
-                url: publicUrlResult.data.publicUrl,
+                url: publicUrlData.publicUrl,
                 partId: newPart.id,
+                position: i,
               },
             });
           }
+        } catch (imgError) {
+          console.error(`Erro ao processar o ficheiro de imagem ${i}:`, imgError);
         }
       }
     }
