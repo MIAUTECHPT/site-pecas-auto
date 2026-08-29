@@ -12,6 +12,8 @@ type Part = {
   name: string;
   price: number | null;
   stock: number;
+  condition: string | null;
+  description?: string | null;
   brand: Brand;
   model: CarModel;
   category: Category | null;
@@ -71,8 +73,8 @@ export default function AdminPecasPage() {
     setCategoryId(p.category?.id ? String(p.category.id) : "");
     setPrice(p.price !== null ? String(p.price) : "");
     setStock(String(p.stock ?? 1));
-    setCondition("Usado");
-    setDescription("");
+    setCondition(p.condition || "Usado");
+    setDescription(p.description || "");
     setErro("");
     setSucesso("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -129,18 +131,47 @@ export default function AdminPecasPage() {
         body: formData,
       });
 
+      const contentType = res.headers.get("content-type");
+      let data: any = {};
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      }
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || (editingId ? "Erro ao atualizar peça." : "Erro ao criar peça."));
+        throw new Error(data.message || data.error || (editingId ? "Erro ao atualizar peça." : "Erro ao criar peça."));
       }
 
       setSucesso(editingId ? "Peça atualizada com sucesso!" : "Peça criada com sucesso!");
       cancelarEdicao();
       carregarTudo();
     } catch (err: any) {
-      setErro(err.message);
+      setErro(err.message || "Ocorreu um erro inesperado.");
     } finally {
       setCarregando(false);
+    }
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Tem a certeza de que pretende eliminar esta peça?")) return;
+
+    try {
+      const res = await fetch(`/api/pecas/${id}`, {
+        method: "DELETE",
+      });
+
+      const contentType = res.headers.get("content-type");
+      let data: any = {};
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Erro ao eliminar a peça.");
+      }
+
+      carregarTudo();
+    } catch (err: any) {
+      alert(err.message || "Não foi possível eliminar a peça.");
     }
   }
 
@@ -185,7 +216,7 @@ export default function AdminPecasPage() {
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500 text-black"
               />
             </div>
 
@@ -196,7 +227,7 @@ export default function AdminPecasPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500 text-black"
               />
             </div>
 
@@ -209,7 +240,7 @@ export default function AdminPecasPage() {
                   setModelId("");
                 }}
                 required
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500 text-black"
               >
                 <option value="">Selecione a marca</option>
                 {brands.map((b) => (
@@ -224,7 +255,7 @@ export default function AdminPecasPage() {
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}
                 required
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500 text-black"
               >
                 <option value="">Selecione o modelo</option>
                 {modelosFiltrados.map((m) => (
@@ -238,7 +269,7 @@ export default function AdminPecasPage() {
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500 text-black"
               >
                 <option value="">Sem categoria</option>
                 {categories.map((c) => (
@@ -255,7 +286,7 @@ export default function AdminPecasPage() {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500 text-black"
               />
             </div>
 
@@ -266,7 +297,7 @@ export default function AdminPecasPage() {
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500 text-black"
               />
             </div>
 
@@ -275,9 +306,12 @@ export default function AdminPecasPage() {
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 outline-none focus:border-red-500 text-black"
               >
                 <option value="Usado">Usado</option>
+                <option value="Muito bom">Muito bom</option>
+                <option value="Bom">Bom</option>
+                <option value="Para reparar">Para reparar</option>
                 <option value="Novo">Novo</option>
                 <option value="Recondicionado">Recondicionado</option>
               </select>
@@ -289,7 +323,7 @@ export default function AdminPecasPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 outline-none focus:border-red-500 text-black"
               />
             </div>
 
@@ -300,7 +334,7 @@ export default function AdminPecasPage() {
                 ref={fileInputRef}
                 multiple
                 accept="image/*"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 text-black"
               />
             </div>
 
@@ -345,6 +379,13 @@ export default function AdminPecasPage() {
                     className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition"
                   >
                     Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(p.id)}
+                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>
