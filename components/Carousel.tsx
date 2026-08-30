@@ -4,12 +4,23 @@ import React, { useCallback, useRef, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 
 export function Carousel({ children }: { children: React.ReactNode }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ dragFree: true, slidesToScroll: 1 });
+  const [emblaRef] = useEmblaCarousel({ dragFree: true, slidesToScroll: 1 });
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollDirection = useRef<number>(0);
 
-  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+  const scrollPrev = useCallback(() => {
+    if (containerRef.current) {
+      const viewport = containerRef.current.querySelector('.overflow-hidden') as HTMLElement;
+      if (viewport) viewport.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  }, []);
+
+  const scrollNext = useCallback(() => {
+    if (containerRef.current) {
+      const viewport = containerRef.current.querySelector('.overflow-hidden') as HTMLElement;
+      if (viewport) viewport.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  }, []);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -22,9 +33,9 @@ export function Carousel({ children }: { children: React.ReactNode }) {
       const threshold = 100;
 
       if (x < threshold) {
-        scrollDirection.current = -((threshold - x) / threshold) * 10;
+        scrollDirection.current = -((threshold - x) / threshold) * 8;
       } else if (x > width - threshold) {
-        scrollDirection.current = ((x - (width - threshold)) / threshold) * 10;
+        scrollDirection.current = ((x - (width - threshold)) / threshold) * 8;
       } else {
         scrollDirection.current = 0;
       }
@@ -41,8 +52,7 @@ export function Carousel({ children }: { children: React.ReactNode }) {
     }
 
     const animate = () => {
-      if (scrollDirection.current !== 0 && emblaRef && containerRef.current) {
-        // Encontra o elemento interno do Embla onde ocorre o scroll
+      if (scrollDirection.current !== 0 && containerRef.current) {
         const viewport = containerRef.current.querySelector('.overflow-hidden') as HTMLElement;
         if (viewport) {
           viewport.scrollLeft += scrollDirection.current;
@@ -60,7 +70,7 @@ export function Carousel({ children }: { children: React.ReactNode }) {
       }
       cancelAnimationFrame(animationFrameId);
     };
-  }, [emblaRef]);
+  }, []);
 
   return (
     <div className="relative" ref={containerRef}>
