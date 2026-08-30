@@ -107,7 +107,12 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
             <div className="flex items-start justify-between gap-6">
               <div>
                 <p className="text-sm text-zinc-500">Preço</p>
-                <p className="mt-1 text-4xl font-black">{preco}</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <p className="text-4xl font-black">{preco}</p>
+                  {peca.price !== null && (
+                    <span className="text-sm font-semibold text-zinc-500">+ IVA</span>
+                  )}
+                </div>
               </div>
 
               <span
