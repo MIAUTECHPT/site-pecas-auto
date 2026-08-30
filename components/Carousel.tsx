@@ -11,24 +11,20 @@ export function Carousel({ children }: { children: React.ReactNode }) {
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
-  // Efeito para detetar a posição do rato e animar o scroll contínuo
   useEffect(() => {
     let animationFrameId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current || !emblaApi) return;
+      if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left; // Posição X relativa ao carrossel
+      const x = e.clientX - rect.left;
       const width = rect.width;
-
-      const threshold = 100; // Zona de ativação em pixels nas bermas
+      const threshold = 100;
 
       if (x < threshold) {
-        // Encostado à esquerda: quanto mais perto da borda, mais rápido anda
-        scrollDirection.current = -((threshold - x) / threshold) * 8;
+        scrollDirection.current = -((threshold - x) / threshold) * 10;
       } else if (x > width - threshold) {
-        // Encostado à direita
-        scrollDirection.current = ((x - (width - threshold)) / threshold) * 8;
+        scrollDirection.current = ((x - (width - threshold)) / threshold) * 10;
       } else {
         scrollDirection.current = 0;
       }
@@ -45,8 +41,12 @@ export function Carousel({ children }: { children: React.ReactNode }) {
     }
 
     const animate = () => {
-      if (scrollDirection.current !== 0 && emblaApi) {
-        emblaApi.scrollBy(scrollDirection.current, false);
+      if (scrollDirection.current !== 0 && emblaRef && containerRef.current) {
+        // Encontra o elemento interno do Embla onde ocorre o scroll
+        const viewport = containerRef.current.querySelector('.overflow-hidden') as HTMLElement;
+        if (viewport) {
+          viewport.scrollLeft += scrollDirection.current;
+        }
       }
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -60,7 +60,7 @@ export function Carousel({ children }: { children: React.ReactNode }) {
       }
       cancelAnimationFrame(animationFrameId);
     };
-  }, [emblaApi]);
+  }, [emblaRef]);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -70,7 +70,6 @@ export function Carousel({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       
-      {/* Setas de navegação mantidas */}
       <button onClick={scrollPrev} className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-2 shadow-lg border border-zinc-200">⬅️</button>
       <button onClick={scrollNext} className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-2 shadow-lg border border-zinc-200">➡️</button>
     </div>
