@@ -267,7 +267,7 @@ export default function Home() {
           <nav className="hidden items-center gap-8 text-sm font-semibold md:flex">
             <a href="#pecas" className="text-lg font-medium transition hover:text-red-600">Peças</a>
             <a href="#salvados" className="text-lg font-medium transition hover:text-red-600">Viaturas</a>
-            <a href="#sobre" className="text-lg font-medium transition hover:text-red-600">Sobre nós</a>
+            <a href="#sobre" className="text-lg font-medium transition hover:text-red-600">Sobre</a>
             <a href="#contactos" className="text-lg font-medium transition hover:text-red-600">Contactos</a>
           </nav>
 
