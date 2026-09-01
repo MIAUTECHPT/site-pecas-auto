@@ -65,10 +65,16 @@ Gostaria de saber se a peça está disponível e quais são as condições de en
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900">
       {/* HEADER */}
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-xl font-black">
-            AUTO<span className="text-red-600">PEÇAS</span>
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-16 w-auto overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="BRPEÇAS"
+                className="h-full w-full object-contain"
+              />
+            </div>
           </Link>
 
           <Link
