@@ -41,7 +41,7 @@ export default function SobrePage() {
           <p>
             Pode confiar inteiramente na nossa equipa e na nossa seriedade. Estamos sediados em Vila de Cucujães, com morada na{' '}
             <a 
-              href="https://www.google.com/maps/search/?api=1&query=Rua+Prof.+Lidio+Correia+Bloco+Sul+684+Picoto+3720-798+Vila+de+Cucujaes+Portugal" 
+              href="https://www.google.com/maps/search/?api=1&query=Rua+Prof.+Lidio+Correia+684+Picoto+3720-798+Vila+de+Cucujaes+Portugal" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="underline underline-offset-4 text-zinc-900 hover:text-red-600 font-medium"

@@ -698,7 +698,7 @@ export default function Home() {
     <p>✉️ brpecasauto2022@gmail.com</p>
     <p>
       <a 
-        href="https://www.google.com/maps/search/?api=1&query=Rua+Prof.+Lidio+Correia+Bloco+Sul+684+Picoto+3720-798+Vila+de+Cucujaes+Portugal"
+        href="https://www.google.com/maps/search/?api=1&query=Rua+Prof.+Lidio+Correia+684+Picoto+3720-798+Vila+de+Cucujaes+Portugal"
         target="_blank"
         rel="noopener noreferrer"
         className="transition hover:text-red-600 underline underline-offset-4 inline-block"
